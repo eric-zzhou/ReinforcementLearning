@@ -3,7 +3,6 @@ Python code for the 2048 game that is specifically designed to work for AI and M
 models to be trained on
 Modified version of https://github.com/Mekire/console-2048/blob/master/console2048.py
 """
-import sys
 from random import random, randint, shuffle
 import numpy as np
 import math
@@ -275,7 +274,33 @@ class ImprovedGame:
             self.put_new_cell()
             self.put_new_cell()
 
-    # Traverse from corner
+    # Flattens board to input into nn
+    def flatten(self):
+        flat = []
+        for i in range(self.grid.shape[0]):
+            for j in range(self.grid.shape[1]):
+                curr = self.grid[i][j]
+                if curr != 0:
+                    flat.append(math.log2(curr))
+                else:
+                    flat.append(0)
+        logmax = max(flat)
+        for i in range(len(flat)):
+            flat[i] = flat[i] / logmax
+        return flat
+
+    # Find maximum number on the board
+    def ordered(self):
+        m = []
+        for i in range(self.grid.shape[0]):
+            for j in range(self.grid.shape[1]):
+                cur = self.grid[i, j]
+                if cur != 0:
+                    m.append((cur, i, j))
+        m.sort(reverse=True)
+        return m
+
+    # Follow snake pattern to help calculate fitness based on strategy
     def corner_traverse(self, corner):
         nums1 = nums2 = 0
         dec = (3, -1, -1)
@@ -290,15 +315,20 @@ class ImprovedGame:
         else:
             h_stuff = (dec, inc)
 
+        vals = self.ordered()
+
         switch = False
         cont = True
-        prev = 1000000000
+        counter = 0
         for j in range(v_stuff[0][0], v_stuff[0][1], v_stuff[0][2]):
             for i in range(h_stuff[switch][0], h_stuff[switch][1], h_stuff[switch][2]):
                 cur = self.grid[j][i]
-                if cur < prev:  # todo change condition here for continuing
+                if counter >= len(vals):
+                    cont = False
+                    break
+                if cur == vals[counter][0]:  # todo change condition here for snaking fitness
                     nums1 += math.log2(cur)
-                    prev = cur
+                    counter += 1
                 else:
                     cont = False
                     break
@@ -309,13 +339,16 @@ class ImprovedGame:
 
         switch = False
         cont = True
-        prev = 1000000000
+        counter = 0
         for i in range(h_stuff[0][0], h_stuff[0][1], h_stuff[0][2]):
             for j in range(v_stuff[switch][0], v_stuff[switch][1], v_stuff[switch][2]):
                 cur = self.grid[j][i]
-                if cur < prev:
+                if counter >= len(vals):
+                    cont = False
+                    break
+                if cur == vals[counter][0]:
                     nums2 += math.log2(cur)
-                    prev = cur
+                    counter += 1
                 else:
                     cont = False
                     break
@@ -323,41 +356,8 @@ class ImprovedGame:
                 switch = not switch
             else:
                 break
-
+        # print(nums1, nums2)
         return max(nums1, nums2)
-
-    # Flattens board to input into nn
-    def flatten(self):
-        flat = []
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
-                curr = self.grid[i][j]
-                if (curr != 0):
-                    flat.append(math.log2(curr))
-                else:
-                    flat.append(0)
-        logmax = max(flat)
-        for i in range(len(flat)):
-            flat[i] = flat[i] / logmax
-        return flat
-
-    # Find maximum number on the board
-    def ordered(self):
-        m = []
-        max = 0
-        count = 0
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
-                cur = self.grid[i, j]
-                if cur != 0:
-                    m.append((cur, i, j))
-                if cur > max:
-                    max = cur
-                    count = 1
-                elif cur == max:
-                    count += 1
-        m.sort(reverse=True)
-        return max, count, m
 
     # Play a certain move and calculate score
     def move(self, direction):
@@ -508,6 +508,7 @@ class ImprovedGame:
         # Variables
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
+        # shifted = []
 
         # Looping through and moving each number accordingly
         for c in range(columns):
@@ -521,13 +522,19 @@ class ImprovedGame:
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
                         moved |= (spot != r)  # updates moved if unmoved
-                        # todo: if moved, then add to list to check for same number later
                         prev = self.grid[spot, c] = current  # update prev
+                        # if moved:
+                        #     shifted.append((current, spot, c))
                         spot -= 1  # decrement i
+
             # Fill the remaining top part with
             while 0 <= spot:
                 self.grid[spot, c] = 0
                 spot -= 1
+
+        # todo: all blocks that were not combined but moved are in list "shifted", loop through and keep track
+        # for val, r, c in shifted:
+        #     pass
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
 

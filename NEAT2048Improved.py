@@ -12,51 +12,57 @@ class TwoGame:
 
     def train_ai(self, genome, conf):
         net = neat.nn.FeedForwardNetwork.create(genome, conf)
+        overall_fitness = 0
 
         for games in range(5):
             self.game.reset_game()
             run = True
+            fitness = 0
             while run:
+                # Using neural network to make a move
                 output = net.activate(tuple(self.game.flatten()))
                 output_tuples = []
                 for i, o in enumerate(output):
                     output_tuples.append((o, i))
                 output_tuples.sort(reverse=True)
                 for o, i in output_tuples:
-                    moved, cur_score = self.game.move(i)
+                    moved, cur_score = self.game.move(i)  # todo change the move so that it also adds stuff for matching
                     if moved:
-                        # a_moves = ["LEFT", "UP", "RIGHT", "DOWN"]
-                        # print(a_moves[i])
                         break
-                # self.game.display()
-                # print(self.game.end)
-                # todo adjust fitness after every step
-                fitness = 0
-                removed = False
-                fitness += cur_score
-                maximum, count, order = self.game.ordered()
+
+                # Adjusting fitness after each step
+                corner = -1
+                order = self.game.ordered()
 
                 # Making sure maximum is in one of the corners
-                for i in range(count):
-                    m, px, py = order[0]
-                    if m != maximum:
-                        print(f"ERROR SOMETHING IS WRONG: {maximum} vs {m} ({px}, {py})")
-                        exit()
-                    if ((px == 0) or (px == 3)) and ((py == 0) or (px == 3)):
-                        fitness *= math.log2(maximum)
-                        order.pop(i)
-                        removed = True
-                        break
-                if removed:  # todo finish the snaking part
-                    smoothness = 0
+                m, px, py = order[0]
+                if self.game.grid[0][0] == m:
+                    cur_score *= math.log2(m)
+                    corner = 0
+                elif self.game.grid[0][3] == m:
+                    cur_score *= math.log2(m)
+                    corner = 1
+                elif self.game.grid[3][0] == m:
+                    cur_score *= math.log2(m)
+                    corner = 2
+                elif self.game.grid[3][3] == m:
+                    cur_score *= math.log2(m)
+                    corner = 3
+
+                # Snaking pattern
+                if corner != -1:
+                    smoothness = self.game.corner_traverse(corner)
                     if smoothness != 0:
-                        fitness *= smoothness
+                        cur_score *= smoothness
+
+                fitness += cur_score
 
                 if self.game.end:
                     self.game.display()
-                    genome.fitness += fitness
-                    print(f"{fitness}, {maximum}")
+                    overall_fitness += fitness
+                    print(f"{fitness}, {m}")
                     run = False
+        return overall_fitness
 
 
 # if self.game.end:
@@ -100,13 +106,17 @@ class TwoGame:
 #     print(f"\tfitness: {self.game.score}{s}, {right_spot}")
 #     run = False
 
+def eval_genome(genome, conf):
+    game = TwoGame()
+    # print("___________________________________________________________________________________________________________")
+    return game.train_ai(genome, conf)
+
+
 def eval_genomes(genomes, conf):
     for i, genome_stuff in enumerate(genomes):
         genome_id, genome = genome_stuff
-        genome.fitness = 0
-        game = TwoGame()
         print(f"\n\nindividual {i}: -----------------------------------------------------------------------------")
-        game.train_ai(genome, conf)
+        genome.fitness = eval_genome(genome, conf)
 
 
 def run_neat(conf):
@@ -117,9 +127,11 @@ def run_neat(conf):
     p.add_reporter(neat.Checkpointer(125))
 
     # todo multiprocessing might have problems, eval_genomes vs eval_genome
-    pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genomes)
+    pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
+    winner = p.run(pe.evaluate, 1000000000)
 
-    winner = p.run(pe.eval_genomes, 1000000)
+    # winner = p.run(eval_genomes, 1000000000)
+
     with open("best.pickle", "wb") as f:
         pickle.dump(winner, f)
 

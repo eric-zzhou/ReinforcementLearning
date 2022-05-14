@@ -3,8 +3,6 @@ import neat
 import os
 import pickle
 
-# todo https://neat-python.readthedocs.io/en/latest/_modules/parallel.html
-
 
 class TwoGame:
     def __init__(self):
