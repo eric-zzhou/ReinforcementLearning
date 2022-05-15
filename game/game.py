@@ -7,6 +7,9 @@ from random import random, randint, shuffle
 import numpy as np
 import math
 
+# todo tune match fitness constant
+MATCH_FIT_CONST = 0.5
+
 
 # Game object with 2048 game
 class Game:
@@ -508,7 +511,7 @@ class ImprovedGame:
         # Variables
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
-        # shifted = []
+        shifted = []
 
         # Looping through and moving each number accordingly
         for c in range(columns):
@@ -523,8 +526,8 @@ class ImprovedGame:
                     else:  # if the numbers are different
                         moved |= (spot != r)  # updates moved if unmoved
                         prev = self.grid[spot, c] = current  # update prev
-                        # if moved:
-                        #     shifted.append((current, spot, c))
+                        if moved:
+                            shifted.append((current, spot, c))
                         spot -= 1  # decrement i
 
             # Fill the remaining top part with
@@ -533,8 +536,18 @@ class ImprovedGame:
                 spot -= 1
 
         # todo: all blocks that were not combined but moved are in list "shifted", loop through and keep track
-        # for val, r, c in shifted:
-        #     pass
+        temp = 0
+        for val, r, c in shifted:
+            if c > 0:
+                if val == self.grid[r][c - 1]:
+                    print(r, c - 1)
+                    temp += math.log2(val)
+            if c < 3:
+                if val == self.grid[r][c + 1]:
+                    print(r, c - 1)
+                    temp += math.log2(val)
+        print(cur_score, (temp * MATCH_FIT_CONST))
+        cur_score += (temp * MATCH_FIT_CONST)
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
 
@@ -605,6 +618,6 @@ def random_play(game, prt):
 
 # Main function to test program
 if __name__ == "__main__":
-    g = Game()
+    g = ImprovedGame()
     score = random_play(g, True)
     print("Score: ", score)

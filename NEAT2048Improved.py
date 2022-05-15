@@ -126,7 +126,6 @@ def run_neat(conf):
     p.add_reporter(neat.StatisticsReporter())
     p.add_reporter(neat.Checkpointer(125))
 
-    # todo multiprocessing might have problems, eval_genomes vs eval_genome
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
     winner = p.run(pe.evaluate, 1000000000)
 
