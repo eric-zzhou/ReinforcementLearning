@@ -521,13 +521,14 @@ class ImprovedGame:
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
                         self.grid[spot + 1, c] += current  # combine into one
+                        shifted.append((spot + 1, c))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
                         moved |= (spot != r)  # updates moved if unmoved
                         prev = self.grid[spot, c] = current  # update prev
-                        if moved:
-                            shifted.append((current, spot, c))
+                        if spot != r:
+                            shifted.append((spot, c))
                         spot -= 1  # decrement i
 
             # Fill the remaining top part with
@@ -537,17 +538,27 @@ class ImprovedGame:
 
         # todo: all blocks that were not combined but moved are in list "shifted", loop through and keep track
         temp = 0
-        for val, r, c in shifted:
+        for r, c in shifted:
+            val = self.grid[r, c]
             if c > 0:
                 if val == self.grid[r][c - 1]:
-                    print(r, c - 1)
+                    print(f"({r}, {c}) and ({r}, {c - 1})")
                     temp += math.log2(val)
             if c < 3:
                 if val == self.grid[r][c + 1]:
-                    print(r, c - 1)
+                    print(f"({r}, {c}) and ({r}, {c + 1})")
                     temp += math.log2(val)
-        print(cur_score, (temp * MATCH_FIT_CONST))
+            if r > 0:
+                if val == self.grid[r - 1][c]:
+                    print(f"({r}, {c}) and ({r - 1}, {c})")
+                    temp += math.log2(val)
+            if r < 3:
+                if val == self.grid[r + 1][c]:
+                    print(f"({r}, {c}) and ({r + 1}, {c})")
+                    temp += math.log2(val)
+        print(cur_score, temp)
         cur_score += (temp * MATCH_FIT_CONST)
+        
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
 
