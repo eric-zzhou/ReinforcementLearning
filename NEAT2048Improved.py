@@ -26,7 +26,7 @@ class TwoGame:
                     output_tuples.append((o, i))
                 output_tuples.sort(reverse=True)
                 for o, i in output_tuples:
-                    moved, cur_score = self.game.move(i)  # todo change the move so that it also adds stuff for matching
+                    moved, cur_score = self.game.move(i)
                     if moved:
                         break
 

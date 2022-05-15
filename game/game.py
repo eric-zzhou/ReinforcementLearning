@@ -454,27 +454,9 @@ class ImprovedGame:
                 self.grid[r, spot] = 0
                 spot += 1
 
-        temp = 0
-        for r, c in shifted:
-            val = self.grid[r, c]
-            if c > 0:
-                if val == self.grid[r][c - 1]:
-                    print(f"({r}, {c}) and ({r}, {c - 1})")
-                    temp += math.log2(val)
-            if c < 3:
-                if val == self.grid[r][c + 1]:
-                    print(f"({r}, {c}) and ({r}, {c + 1})")
-                    temp += math.log2(val)
-            if r > 0:
-                if val == self.grid[r - 1][c]:
-                    print(f"({r}, {c}) and ({r - 1}, {c})")
-                    temp += math.log2(val)
-            if r < 3:
-                if val == self.grid[r + 1][c]:
-                    print(f"({r}, {c}) and ({r + 1}, {c})")
-                    temp += math.log2(val)
-        print(cur_score, temp)
-        cur_score += (temp * MATCH_FIT_CONST)
+        matches = self.check_neighbors(shifted)
+        # print(cur_score, matches/MATCH_FIT_CONST)
+        cur_score += matches
 
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
@@ -509,27 +491,9 @@ class ImprovedGame:
                 self.grid[r, spot] = 0
                 spot -= 1
 
-        temp = 0
-        for r, c in shifted:
-            val = self.grid[r, c]
-            if c > 0:
-                if val == self.grid[r][c - 1]:
-                    print(f"({r}, {c}) and ({r}, {c - 1})")
-                    temp += math.log2(val)
-            if c < 3:
-                if val == self.grid[r][c + 1]:
-                    print(f"({r}, {c}) and ({r}, {c + 1})")
-                    temp += math.log2(val)
-            if r > 0:
-                if val == self.grid[r - 1][c]:
-                    print(f"({r}, {c}) and ({r - 1}, {c})")
-                    temp += math.log2(val)
-            if r < 3:
-                if val == self.grid[r + 1][c]:
-                    print(f"({r}, {c}) and ({r + 1}, {c})")
-                    temp += math.log2(val)
-        print(cur_score, temp)
-        cur_score += (temp * MATCH_FIT_CONST)
+        matches = self.check_neighbors(shifted)
+        # print(cur_score, matches/MATCH_FIT_CONST)
+        cur_score += matches
 
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
@@ -563,27 +527,9 @@ class ImprovedGame:
                 self.grid[spot, c] = 0
                 spot += 1
 
-        temp = 0
-        for r, c in shifted:
-            val = self.grid[r, c]
-            if c > 0:
-                if val == self.grid[r][c - 1]:
-                    print(f"({r}, {c}) and ({r}, {c - 1})")
-                    temp += math.log2(val)
-            if c < 3:
-                if val == self.grid[r][c + 1]:
-                    print(f"({r}, {c}) and ({r}, {c + 1})")
-                    temp += math.log2(val)
-            if r > 0:
-                if val == self.grid[r - 1][c]:
-                    print(f"({r}, {c}) and ({r - 1}, {c})")
-                    temp += math.log2(val)
-            if r < 3:
-                if val == self.grid[r + 1][c]:
-                    print(f"({r}, {c}) and ({r + 1}, {c})")
-                    temp += math.log2(val)
-        print(cur_score, temp)
-        cur_score += (temp * MATCH_FIT_CONST)
+        matches = self.check_neighbors(shifted)
+        # print(cur_score, matches/MATCH_FIT_CONST)
+        cur_score += matches
 
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
@@ -618,30 +564,36 @@ class ImprovedGame:
                 self.grid[spot, c] = 0
                 spot -= 1
 
-        temp = 0
-        for r, c in shifted:
-            val = self.grid[r, c]
-            if c > 0:
-                if val == self.grid[r][c - 1]:
-                    print(f"({r}, {c}) and ({r}, {c - 1})")
-                    temp += math.log2(val)
-            if c < 3:
-                if val == self.grid[r][c + 1]:
-                    print(f"({r}, {c}) and ({r}, {c + 1})")
-                    temp += math.log2(val)
-            if r > 0:
-                if val == self.grid[r - 1][c]:
-                    print(f"({r}, {c}) and ({r - 1}, {c})")
-                    temp += math.log2(val)
-            if r < 3:
-                if val == self.grid[r + 1][c]:
-                    print(f"({r}, {c}) and ({r + 1}, {c})")
-                    temp += math.log2(val)
-        print(cur_score, temp)
-        cur_score += (temp * MATCH_FIT_CONST)
+        matches = self.check_neighbors(shifted)
+        # print(cur_score, matches/MATCH_FIT_CONST)
+        cur_score += matches
 
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
+
+    def check_neighbors(self, shifted):
+        temp = 0
+        visited = []
+        for r, c in shifted:
+            val = self.grid[r, c]
+            visited.append((r, c))
+            if c > 0:
+                if ((r, c - 1) not in visited) and (val == self.grid[r][c - 1]):
+                    # print(f"({r}, {c}) and ({r}, {c - 1})")
+                    temp += math.log2(val)
+            if c < 3:
+                if ((r, c + 1) not in visited) and (val == self.grid[r][c + 1]):
+                    # print(f"({r}, {c}) and ({r}, {c + 1})")
+                    temp += math.log2(val)
+            if r > 0:
+                if ((r - 1, c) not in visited) and (val == self.grid[r - 1][c]):
+                    # print(f"({r}, {c}) and ({r - 1}, {c})")
+                    temp += math.log2(val)
+            if r < 3:
+                if ((r + 1, c) not in visited) and (val == self.grid[r + 1][c]):
+                    # print(f"({r}, {c}) and ({r + 1}, {c})")
+                    temp += math.log2(val)
+        return temp * MATCH_FIT_CONST
 
     # Putting new cells on the board
     def put_new_cell(self):
