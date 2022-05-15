@@ -430,6 +430,7 @@ class ImprovedGame:
         # Variables
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
+        shifted = []
 
         # Looping through and moving each number accordingly
         for r in range(rows):
@@ -439,16 +440,42 @@ class ImprovedGame:
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
                         self.grid[r, spot - 1] += current  # combine into one
+                        shifted.append((r, spot - 1))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
                         moved |= (spot != c)  # updates moved if unmoved
                         prev = self.grid[r, spot] = current  # update prev
+                        if spot != c:
+                            shifted.append((r, spot))
                         spot += 1  # increment i
             # Fill the remaining right part with 0
             while spot < columns:
                 self.grid[r, spot] = 0
                 spot += 1
+
+        temp = 0
+        for r, c in shifted:
+            val = self.grid[r, c]
+            if c > 0:
+                if val == self.grid[r][c - 1]:
+                    print(f"({r}, {c}) and ({r}, {c - 1})")
+                    temp += math.log2(val)
+            if c < 3:
+                if val == self.grid[r][c + 1]:
+                    print(f"({r}, {c}) and ({r}, {c + 1})")
+                    temp += math.log2(val)
+            if r > 0:
+                if val == self.grid[r - 1][c]:
+                    print(f"({r}, {c}) and ({r - 1}, {c})")
+                    temp += math.log2(val)
+            if r < 3:
+                if val == self.grid[r + 1][c]:
+                    print(f"({r}, {c}) and ({r + 1}, {c})")
+                    temp += math.log2(val)
+        print(cur_score, temp)
+        cur_score += (temp * MATCH_FIT_CONST)
+
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
 
@@ -457,6 +484,7 @@ class ImprovedGame:
         # Variables
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
+        shifted = []
 
         # Looping through and moving each number accordingly
         for r in range(rows):
@@ -466,16 +494,43 @@ class ImprovedGame:
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
                         self.grid[r, spot + 1] += current  # combine into one
+                        shifted.append((r, spot + 1))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
                         moved |= (spot != c)  # updates moved if unmoved
                         prev = self.grid[r, spot] = current  # update prev
+                        if spot != c:
+                            shifted.append((r, spot))
                         spot -= 1  # decrement i
-            # Fill the remaining left part with 0
+
+            # Fill the remaining top part with
             while 0 <= spot:
                 self.grid[r, spot] = 0
                 spot -= 1
+
+        temp = 0
+        for r, c in shifted:
+            val = self.grid[r, c]
+            if c > 0:
+                if val == self.grid[r][c - 1]:
+                    print(f"({r}, {c}) and ({r}, {c - 1})")
+                    temp += math.log2(val)
+            if c < 3:
+                if val == self.grid[r][c + 1]:
+                    print(f"({r}, {c}) and ({r}, {c + 1})")
+                    temp += math.log2(val)
+            if r > 0:
+                if val == self.grid[r - 1][c]:
+                    print(f"({r}, {c}) and ({r - 1}, {c})")
+                    temp += math.log2(val)
+            if r < 3:
+                if val == self.grid[r + 1][c]:
+                    print(f"({r}, {c}) and ({r + 1}, {c})")
+                    temp += math.log2(val)
+        print(cur_score, temp)
+        cur_score += (temp * MATCH_FIT_CONST)
+
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
 
@@ -484,6 +539,7 @@ class ImprovedGame:
         # Variables
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
+        shifted = []
 
         # Looping through and moving each number accordingly
         for c in range(columns):
@@ -493,16 +549,42 @@ class ImprovedGame:
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
                         self.grid[spot - 1, c] += current  # combine into one
+                        shifted.append((spot - 1, c))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
                         moved |= (spot != r)  # updates moved if unmoved
                         prev = self.grid[spot, c] = current  # update prev
+                        if spot != r:
+                            shifted.append((spot, c))
                         spot += 1  # increment i
             # Fill the remaining bottom part with 0
             while spot < rows:
                 self.grid[spot, c] = 0
                 spot += 1
+
+        temp = 0
+        for r, c in shifted:
+            val = self.grid[r, c]
+            if c > 0:
+                if val == self.grid[r][c - 1]:
+                    print(f"({r}, {c}) and ({r}, {c - 1})")
+                    temp += math.log2(val)
+            if c < 3:
+                if val == self.grid[r][c + 1]:
+                    print(f"({r}, {c}) and ({r}, {c + 1})")
+                    temp += math.log2(val)
+            if r > 0:
+                if val == self.grid[r - 1][c]:
+                    print(f"({r}, {c}) and ({r - 1}, {c})")
+                    temp += math.log2(val)
+            if r < 3:
+                if val == self.grid[r + 1][c]:
+                    print(f"({r}, {c}) and ({r + 1}, {c})")
+                    temp += math.log2(val)
+        print(cur_score, temp)
+        cur_score += (temp * MATCH_FIT_CONST)
+
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
 
@@ -536,7 +618,6 @@ class ImprovedGame:
                 self.grid[spot, c] = 0
                 spot -= 1
 
-        # todo: all blocks that were not combined but moved are in list "shifted", loop through and keep track
         temp = 0
         for r, c in shifted:
             val = self.grid[r, c]
@@ -558,7 +639,7 @@ class ImprovedGame:
                     temp += math.log2(val)
         print(cur_score, temp)
         cur_score += (temp * MATCH_FIT_CONST)
-        
+
         # Return score or -1 if nothing moved
         return cur_score if moved else -1
 
