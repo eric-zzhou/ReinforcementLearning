@@ -8,7 +8,7 @@ import numpy as np
 import math
 
 # todo tune match fitness constant
-MATCH_FIT_CONST = 0.5
+MATCH_FIT_CONST = 0.25
 
 
 # Game object with 2048 game
@@ -329,7 +329,9 @@ class ImprovedGame:
                 if counter >= len(vals):
                     cont = False
                     break
-                if cur == vals[counter][0]:  # todo change condition here for snaking fitness
+                if cur == vals[counter][0]:
+                    # todo change condition here for snaking fitness, maybe do the factor thing
+                    #  where if the next one is not the exact next largest, it adds a fraction but keeps going
                     nums1 += math.log2(cur)
                     counter += 1
                 else:
@@ -417,13 +419,13 @@ class ImprovedGame:
 
     # Print out board
     def display(self):
-        print("")
+        s = "\n"
         wall = "+------" * self.grid.shape[1] + "+"
-        print(wall)
+        s += wall + "\n"
         for i in range(self.grid.shape[0]):
             insides = "|".join("{:^6}".format(self.grid[i, j]) for j in range(self.grid.shape[1]))
-            print(f"|{insides}|")
-            print(wall)
+            s += f"|{insides}|\n{wall}\n"
+        print(s, end="")
 
     # Push left command
     def push_left(self):
@@ -431,6 +433,7 @@ class ImprovedGame:
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
         shifted = []
+        combs = []
 
         # Looping through and moving each number accordingly
         for r in range(rows):
@@ -441,6 +444,7 @@ class ImprovedGame:
                     if current == prev:  # if the number is the same as the previous
                         self.grid[r, spot - 1] += current  # combine into one
                         shifted.append((r, spot - 1))
+                        combs.append((r, spot - 1))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
@@ -449,6 +453,7 @@ class ImprovedGame:
                         if spot != c:
                             shifted.append((r, spot))
                         spot += 1  # increment i
+
             # Fill the remaining right part with 0
             while spot < columns:
                 self.grid[r, spot] = 0
@@ -459,7 +464,7 @@ class ImprovedGame:
         cur_score += matches
 
         # Return score or -1 if nothing moved
-        return cur_score if moved else -1
+        return (cur_score if moved else -1), combs
 
     # Push right command
     def push_right(self):
@@ -467,6 +472,7 @@ class ImprovedGame:
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
         shifted = []
+        combs = []
 
         # Looping through and moving each number accordingly
         for r in range(rows):
@@ -477,6 +483,7 @@ class ImprovedGame:
                     if current == prev:  # if the number is the same as the previous
                         self.grid[r, spot + 1] += current  # combine into one
                         shifted.append((r, spot + 1))
+                        combs.append((r, spot + 1))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
@@ -496,7 +503,7 @@ class ImprovedGame:
         cur_score += matches
 
         # Return score or -1 if nothing moved
-        return cur_score if moved else -1
+        return (cur_score if moved else -1), combs
 
     # Push up command
     def push_up(self):
@@ -504,6 +511,7 @@ class ImprovedGame:
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
         shifted = []
+        combs = []
 
         # Looping through and moving each number accordingly
         for c in range(columns):
@@ -514,6 +522,7 @@ class ImprovedGame:
                     if current == prev:  # if the number is the same as the previous
                         self.grid[spot - 1, c] += current  # combine into one
                         shifted.append((spot - 1, c))
+                        combs.append((spot - 1, c))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
@@ -522,6 +531,7 @@ class ImprovedGame:
                         if spot != r:
                             shifted.append((spot, c))
                         spot += 1  # increment i
+
             # Fill the remaining bottom part with 0
             while spot < rows:
                 self.grid[spot, c] = 0
@@ -532,7 +542,7 @@ class ImprovedGame:
         cur_score += matches
 
         # Return score or -1 if nothing moved
-        return cur_score if moved else -1
+        return (cur_score if moved else -1), combs
 
     # Push down command
     def push_down(self):
@@ -540,6 +550,7 @@ class ImprovedGame:
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
         shifted = []
+        combs = []
 
         # Looping through and moving each number accordingly
         for c in range(columns):
@@ -550,6 +561,7 @@ class ImprovedGame:
                     if current == prev:  # if the number is the same as the previous
                         self.grid[spot + 1, c] += current  # combine into one
                         shifted.append((spot + 1, c))
+                        combs.append((spot + 1, c))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
@@ -569,7 +581,7 @@ class ImprovedGame:
         cur_score += matches
 
         # Return score or -1 if nothing moved
-        return cur_score if moved else -1
+        return (cur_score if moved else -1), combs
 
     def check_neighbors(self, shifted):
         temp = 0

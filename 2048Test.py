@@ -28,7 +28,7 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      config_path)
 
 # Load ML model
-with open("best.pickle", "rb") as f:
+with open("improvedv1winner.pickle", "rb") as f:
     winner = pickle.load(f)
 net = neat.nn.FeedForwardNetwork.create(winner, config)
 
@@ -77,7 +77,6 @@ while (True):
                 webpage.send_keys(a_move_keys[i])
                 print(f"Chosen move: {a_moves[i]}")
                 break
-        driver.implicitly_wait(0.005)
     except StaleElementReferenceException:
         driver.implicitly_wait(0.005)
 

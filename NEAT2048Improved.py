@@ -37,17 +37,19 @@ class TwoGame:
                 # Making sure maximum is in one of the corners
                 m, px, py = order[0]
                 if self.game.grid[0][0] == m:
-                    cur_score *= math.log2(m)
+                    cur_score *= 2 * math.log2(m)
                     corner = 0
                 elif self.game.grid[0][3] == m:
-                    cur_score *= math.log2(m)
+                    cur_score *= 2 * math.log2(m)
                     corner = 1
                 elif self.game.grid[3][0] == m:
-                    cur_score *= math.log2(m)
+                    cur_score *= 2 * math.log2(m)
                     corner = 2
                 elif self.game.grid[3][3] == m:
-                    cur_score *= math.log2(m)
+                    cur_score *= 2 * math.log2(m)
                     corner = 3
+
+                # todo Check over combinations based on corners
 
                 # Snaking pattern
                 if corner != -1:
@@ -120,18 +122,19 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-6066')
-    p = neat.Population(conf)
+    p = neat.Checkpointer.restore_checkpoint('improved-v1-250pop-2773')
+    # p = neat.Population(conf)
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(neat.StatisticsReporter())
-    p.add_reporter(neat.Checkpointer(125))
+    p.add_reporter(neat.Checkpointer(generation_interval=10, time_interval_seconds=None,
+                                     filename_prefix="improved-v1-250pop-"))
 
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
-    winner = p.run(pe.evaluate, 1000000000)
+    winner = p.run(pe.evaluate, 1)
 
     # winner = p.run(eval_genomes, 1000000000)
 
-    with open("best.pickle", "wb") as f:
+    with open("improvedv1winner.pickle", "wb") as f:
         pickle.dump(winner, f)
 
 
