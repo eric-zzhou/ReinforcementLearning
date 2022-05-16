@@ -5,6 +5,9 @@ import pickle
 import math
 import multiprocessing
 
+CORNER_COORDS = [(0, 0), (0, 3), (3, 0), (3, 3)]
+CORNER_DIST_THRESH = 2
+
 
 class TwoGame:
     def __init__(self):
@@ -26,7 +29,7 @@ class TwoGame:
                     output_tuples.append((o, i))
                 output_tuples.sort(reverse=True)
                 for o, i in output_tuples:
-                    moved, cur_score = self.game.move(i)
+                    moved, cur_score, combs = self.game.move(i)
                     if moved:
                         break
 
@@ -37,22 +40,31 @@ class TwoGame:
                 # Making sure maximum is in one of the corners
                 m, px, py = order[0]
                 if self.game.grid[0][0] == m:
-                    cur_score *= 2 * math.log2(m)
                     corner = 0
                 elif self.game.grid[0][3] == m:
-                    cur_score *= 2 * math.log2(m)
                     corner = 1
                 elif self.game.grid[3][0] == m:
-                    cur_score *= 2 * math.log2(m)
                     corner = 2
                 elif self.game.grid[3][3] == m:
-                    cur_score *= 2 * math.log2(m)
                     corner = 3
 
-                # todo Check over combinations based on corners
+                # Check over combinations based on corners
+                corner_coords = CORNER_COORDS[corner]
+                for comb in combs:
+                    x, y = comb
+                    x1, y1 = corner_coords
+                    distance = abs(x1 - x) + abs(y1 - y)
+                    if distance <= CORNER_DIST_THRESH:
+                        if distance == 0:
+                            distance = 0.5
+                        cur_score += math.log2(self.game.grid[x][y] / 2) * CORNER_DIST_THRESH / distance
+                    else:
+                        l = math.log2(self.game.grid[x][y] / 2)
+                        if l > 2:  # ignoring combining 2s, 4s
+                            cur_score -= l * (distance - CORNER_DIST_THRESH - 1) / CORNER_DIST_THRESH / 2
 
-                # Snaking pattern
                 if corner != -1:
+                    cur_score *= 2 * math.log2(m)
                     smoothness = self.game.corner_traverse(corner)
                     if smoothness != 0:
                         cur_score *= smoothness
@@ -122,7 +134,7 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    p = neat.Checkpointer.restore_checkpoint('improved-v1-250pop-2773')
+    p = neat.Checkpointer.restore_checkpoint('improved-v1-250pop-2868')
     # p = neat.Population(conf)
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(neat.StatisticsReporter())
@@ -130,7 +142,7 @@ def run_neat(conf):
                                      filename_prefix="improved-v1-250pop-"))
 
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
-    winner = p.run(pe.evaluate, 1)
+    winner = p.run(pe.evaluate, 1000000000000000)
 
     # winner = p.run(eval_genomes, 1000000000)
 

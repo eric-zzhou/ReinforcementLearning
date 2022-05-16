@@ -369,18 +369,18 @@ class ImprovedGame:
         # Figure out which move to play
         if direction & 1:
             if direction & 2:
-                cur_score = self.push_down()
+                cur_score, combs = self.push_down()
             else:
-                cur_score = self.push_up()
+                cur_score, combs = self.push_up()
         else:
             if direction & 2:
-                cur_score = self.push_right()
+                cur_score, combs = self.push_right()
             else:
-                cur_score = self.push_left()
+                cur_score, combs = self.push_left()
 
         # Dealing with score
         if cur_score == -1:
-            return 0, 0
+            return 0, 0, combs
 
         if cur_score > 0:
             self.score += cur_score
@@ -388,21 +388,21 @@ class ImprovedGame:
         # Check if game is over
         if not self.prepare_next_turn():
             self.end = True
-        return 1, cur_score
+        return 1, cur_score, combs
 
     # Play a certain move without setting up for next move (for manual game)
     def game_move(self, direction):
         # Figure out which move to play
         if direction & 1:
             if direction & 2:
-                cur_score = self.push_down()
+                cur_score, _ = self.push_down()
             else:
-                cur_score = self.push_up()
+                cur_score, _ = self.push_up()
         else:
             if direction & 2:
-                cur_score = self.push_right()
+                cur_score, _ = self.push_right()
             else:
-                cur_score = self.push_left()
+                cur_score, _ = self.push_left()
 
         # Dealing with score
         if cur_score == -1:
