@@ -28,7 +28,7 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      config_path)
 
 # Load ML model
-with open("improvedv1winner.pickle", "rb") as f:
+with open("improvedv2winner.pickle", "rb") as f:
     winner = pickle.load(f)
 net = neat.nn.FeedForwardNetwork.create(winner, config)
 

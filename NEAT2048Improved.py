@@ -134,19 +134,19 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    p = neat.Checkpointer.restore_checkpoint('improved-v1-250pop-2868')
+    p = neat.Checkpointer.restore_checkpoint('improved-v2-250pop-3578')
     # p = neat.Population(conf)
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(neat.StatisticsReporter())
     p.add_reporter(neat.Checkpointer(generation_interval=10, time_interval_seconds=None,
-                                     filename_prefix="improved-v1-250pop-"))
+                                     filename_prefix="improved-v2-250pop-"))
 
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
-    winner = p.run(pe.evaluate, 1000000000000000)
+    winner = p.run(pe.evaluate, 1)
 
     # winner = p.run(eval_genomes, 1000000000)
 
-    with open("improvedv1winner.pickle", "wb") as f:
+    with open("improvedv2winner.pickle", "wb") as f:
         pickle.dump(winner, f)
 
 
