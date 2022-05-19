@@ -21,6 +21,7 @@ class TwoGame:
             self.game.reset_game()
             run = True
             fitness = 0
+            prev_corner = -1
             while run:
                 # Using neural network to make a move
                 output = net.activate(tuple(self.game.flatten()))
@@ -61,20 +62,23 @@ class TwoGame:
                     else:
                         l = math.log2(self.game.grid[x][y] / 2)
                         if l > 2:  # ignoring combining 2s, 4s
-                            cur_score -= l * (distance - CORNER_DIST_THRESH - 1) / CORNER_DIST_THRESH / 2
+                            cur_score -= l * (distance - CORNER_DIST_THRESH - 1) / CORNER_DIST_THRESH * 2
 
-                if corner != -1:
+                if (corner != -1) and ((corner == prev_corner) or (prev_corner == -1)):
                     cur_score *= 2 * math.log2(m)
                     smoothness = self.game.corner_traverse(corner)
                     if smoothness != 0:
                         cur_score *= smoothness
+                    prev_corner = corner
+                else:
+                    cur_score *= -10 * math.log2(m)
 
                 fitness += cur_score
 
                 if self.game.end:
                     self.game.display()
                     overall_fitness += fitness
-                    print(f"{fitness}, {m}")
+                    print(f"{int(fitness)}, {m}")
                     run = False
         return overall_fitness
 
@@ -134,7 +138,7 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    p = neat.Checkpointer.restore_checkpoint('improved-v2-250pop-3578')
+    p = neat.Checkpointer.restore_checkpoint('improved-v2-250pop-3818')
     # p = neat.Population(conf)
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(neat.StatisticsReporter())
@@ -146,7 +150,7 @@ def run_neat(conf):
 
     # winner = p.run(eval_genomes, 1000000000)
 
-    with open("improvedv2winner.pickle", "wb") as f:
+    with open("improvedv2.3winner.pickle", "wb") as f:
         pickle.dump(winner, f)
 
 

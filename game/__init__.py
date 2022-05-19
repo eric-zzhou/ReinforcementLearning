@@ -1,1 +1,1 @@
-from .game import Game, ImprovedGame
+from .game import Game, ImprovedGame, OpGame
