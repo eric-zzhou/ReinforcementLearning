@@ -699,6 +699,14 @@ class OpGame:
         m.sort(reverse=True)
         return m
 
+    def maximum(self):
+        m = 0
+        for i in range(self.grid.shape[0]):
+            for j in range(self.grid.shape[1]):
+                cur = self.grid[i, j]
+                m = max(m, cur)
+        return m
+
     # Follow snake pattern to help calculate fitness based on strategy
     def corner_traverse(self, corner):
         nums1 = nums2 = 0

@@ -36,6 +36,8 @@ class TwoGame:
                     if moved:
                         break
 
+                m = self.game.maximum()
+
                 snake = max(self.game.corner_traverse(0), self.game.corner_traverse(1), self.game.corner_traverse(2),
                             self.game.corner_traverse(3))
 
@@ -63,19 +65,19 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    # p = neat.Checkpointer.restore_checkpoint('improved-v2-250pop-3578')
-    p = neat.Population(conf)
+    p = neat.Checkpointer.restore_checkpoint('snakeonly-250pop-459')
+    # p = neat.Population(conf)
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(neat.StatisticsReporter())
-    p.add_reporter(neat.Checkpointer(generation_interval=10, time_interval_seconds=None,
+    p.add_reporter(neat.Checkpointer(generation_interval=5, time_interval_seconds=None,
                                      filename_prefix="snakeonly-250pop-"))
 
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
-    winner = p.run(pe.evaluate, 10000000000)
+    winner = p.run(pe.evaluate, 1)
 
     # winner = p.run(eval_genomes, 1000000000)
 
-    with open("snakeonly_winner.pickle", "wb") as f:
+    with open("snakeonly_winner3.pickle", "wb") as f:
         pickle.dump(winner, f)
 
 
