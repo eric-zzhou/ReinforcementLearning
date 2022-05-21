@@ -75,8 +75,62 @@ def corner_traverse(corner):
     return max(nums1, nums2)
 
 
+def grid_smoothness():
+    smoothness = 0
+    empty_sqs = 0
+    matches = 0
+    for i in range(4):
+        for j in range(4):
+            cur = grid[i][j]
+            print(f"\n{cur}", end=": ")
+            if cur:
+                rn = next_right(i, j)
+                print(rn, end=", ")
+                if rn:
+                    diff = math.log2(cur) - math.log2(rn)
+                    if diff:
+                        smoothness -= abs(diff)
+                        print(f"\n\t{cur}, {rn}: {diff}", end="\t")
+                    else:
+                        matches += math.log2(cur)
+
+                dn = next_down(i, j)
+                print(dn)
+                if dn:
+                    diff = math.log2(cur) - math.log2(dn)
+                    if diff:
+                        smoothness -= abs(diff)
+                        print(f"\n\t{cur}, {dn}: {diff}", end="\t")
+                    else:
+                        matches += math.log2(cur)
+            else:
+                print()
+                empty_sqs += 1
+    return smoothness, empty_sqs, matches
+
+
+def next_right(r, c):
+    while c < 3:
+        rn = grid[r][c + 1]
+        if rn == 0:
+            c += 1
+        else:
+            return rn
+    return 0
+
+
+def next_down(r, c):
+    while r < 3:
+        dn = grid[r + 1][c]
+        if dn == 0:
+            r += 1
+        else:
+            return dn
+    return 0
+
+
 grid = np.zeros(shape=(4, 4), dtype='uint16')
-vals = [2048, 1024, 512, 512, 1024, 4, 0, 256, 4, 2, 0, 0, 0, 0, 0, 0]
+vals = [2048, 64, 4, 512, 1024, 4, 0, 0, 4, 2, 0, 512, 0, 0, 2, 0]
 k = 0
 for i in range(len(grid)):
     for j in range(len(grid[0])):
@@ -85,11 +139,4 @@ for i in range(len(grid)):
         k += 1
 print(grid)
 
-num = corner_traverse(0)
-print(num)
-num = corner_traverse(1)
-print(num)
-num = corner_traverse(2)
-print(num)
-num = corner_traverse(3)
-print(num)
+print(grid_smoothness())

@@ -5,8 +5,26 @@ import pickle
 import math
 import multiprocessing
 
-CORNER_COORDS = [(0, 0), (0, 3), (3, 0), (3, 3)]
-CORNER_DIST_THRESH = 2
+CORNER_MAPPING = {
+    (0, 1): 0,
+    (1, 0): 0,
+    (1, 1): 0,
+    (0, 2): 1,
+    (1, 2): 1,
+    (1, 3): 1,
+    (2, 0): 2,
+    (2, 1): 2,
+    (3, 1): 2,
+    (2, 2): 3,
+    (2, 3): 3,
+    (3, 2): 3
+}
+snakew = 0.1
+edgew = 1
+smoothw = 1
+emptyw = 1
+matchw = 0.1
+monow = 0.5
 
 
 # todo https://github.com/xificurk/2048-ai, look in cpp file and search for heur_score
@@ -32,18 +50,32 @@ class TwoGame:
                     output_tuples.append((o, i))
                 output_tuples.sort(reverse=True)
                 for o, i in output_tuples:
-                    moved, cur_score, combs = self.game.move(i)
+                    moved, cur_score = self.game.move(i)
                     if moved:
                         break
 
-                m = self.game.maximum()
+                # Get order of squares
+                order = self.game.ordered()
 
-                # todo change this to look only at corner closest to maximum
-                snake = max(self.game.corner_traverse(0), self.game.corner_traverse(1), self.game.corner_traverse(2),
-                            self.game.corner_traverse(3))
+                # Figure out which corner to use
+                m, px, py = order[0]
+                if self.game.grid[0][0] == m:
+                    corner = 0
+                elif self.game.grid[0][3] == m:
+                    corner = 1
+                elif self.game.grid[3][0] == m:
+                    corner = 2
+                elif self.game.grid[3][3] == m:
+                    corner = 3
+                else:
+                    corner = CORNER_MAPPING.get((px, py))
+                snake = self.game.corner_traverse(corner)
+                edge = self.game.edges(corner)
+                smooth, empty, matches, mono = self.game.grid_smoothness(corner)
 
-                # todo change right here
-                fitness += snake
+                # todo change right here, weights and add all up
+                fitness += (snake * snakew + smooth * smoothw + empty * emptyw + matches * matchw + edge * edgew + mono
+                            * monow)
 
                 if self.game.end:
                     self.game.display()

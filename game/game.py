@@ -740,23 +740,95 @@ class OpGame:
         # print(nums1, nums2)
         return max(nums1, nums2)
 
+    def grid_smoothness(self, corner):
+        smoothness = 0
+        empty_sqs = 0
+        matches = 0
+        mono = 0
+        for i in range(4):
+            for j in range(4):
+                cur = self.grid[i][j]
+                if cur:
+                    rn = self.next_right(i, j)
+                    if rn:
+                        diff = math.log2(rn) - math.log2(cur)
+                        if diff > 0:
+                            smoothness -= abs(diff)
+                            if (corner == 0) or (corner == 2):
+                                mono -= math.log2(rn)
+                        elif diff < 0:
+                            smoothness -= abs(diff)
+                            if (corner == 1) or (corner == 3):
+                                mono -= math.log2(rn)
+                        else:
+                            matches += math.log2(cur)
+
+                    dn = self.next_down(i, j)
+                    if dn:
+                        diff = math.log2(dn) - math.log2(cur)
+                        if diff:
+                            smoothness -= abs(diff)
+                            if (corner == 0) or (corner == 1):
+                                mono -= math.log2(dn)
+                        elif diff < 0:
+                            smoothness -= abs(diff)
+                            if (corner == 2) or (corner == 3):
+                                mono -= math.log2(dn)
+                        else:
+                            matches += math.log2(cur)
+                else:
+                    empty_sqs += 1
+        return smoothness, empty_sqs, matches, mono
+
+    def next_right(self, r, c):
+        while c < 3:
+            rn = self.grid[r][c + 1]
+            if rn == 0:
+                c += 1
+            else:
+                return rn
+        return 0
+
+    def next_down(self, r, c):
+        while r < 3:
+            dn = self.grid[r + 1][c]
+            if dn == 0:
+                r += 1
+            else:
+                return dn
+        return 0
+
+    def edges(self, corner):
+        if corner == 0:
+            return math.log2(self.grid[0][0]) + math.log2(self.grid[0][1]) + math.log2(self.grid[0][2]) + math.log2(
+                self.grid[0][3]) + math.log2(self.grid[1][0]) + math.log2(self.grid[2][0]) + math.log2(self.grid[3][0])
+        elif corner == 1:
+            return math.log2(self.grid[0][0]) + math.log2(self.grid[0][1]) + math.log2(self.grid[0][2]) + math.log2(
+                self.grid[0][3]) + math.log2(self.grid[1][3]) + math.log2(self.grid[2][3]) + math.log2(self.grid[3][3])
+        elif corner == 2:
+            return math.log2(self.grid[0][0]) + math.log2(self.grid[1][0]) + math.log2(self.grid[2][0]) + math.log2(
+                self.grid[3][0]) + math.log2(self.grid[3][1]) + math.log2(self.grid[3][2]) + math.log2(self.grid[3][3])
+        else:
+            return math.log2(self.grid[0][3]) + math.log2(self.grid[1][3]) + math.log2(self.grid[2][3]) + math.log2(
+                self.grid[3][0]) + math.log2(self.grid[3][1]) + math.log2(self.grid[3][2]) + math.log2(self.grid[3][3])
+
     # Play a certain move and calculate score
     def move(self, direction):
         # Figure out which move to play
         if direction & 1:
             if direction & 2:
-                cur_score, combs = self.push_down()
+                cur_score = self.push_down()
             else:
-                cur_score, combs = self.push_up()
+                cur_score = self.push_up()
         else:
             if direction & 2:
-                cur_score, combs = self.push_right()
+                cur_score = self.push_right()
             else:
-                cur_score, combs = self.push_left()
+                cur_score = self.push_left()
 
         # Dealing with score
         if cur_score == -1:
-            return 0, 0, combs
+            return 0, 0
 
         if cur_score > 0:
             self.score += cur_score
@@ -764,21 +836,21 @@ class OpGame:
         # Check if game is over
         if not self.prepare_next_turn():
             self.end = True
-        return 1, cur_score, combs
+        return 1, cur_score
 
     # Play a certain move without setting up for next move (for manual game)
     def game_move(self, direction):
         # Figure out which move to play
         if direction & 1:
             if direction & 2:
-                cur_score, _ = self.push_down()
+                cur_score = self.push_down()
             else:
-                cur_score, _ = self.push_up()
+                cur_score = self.push_up()
         else:
             if direction & 2:
-                cur_score, _ = self.push_right()
+                cur_score = self.push_right()
             else:
-                cur_score, _ = self.push_left()
+                cur_score = self.push_left()
 
         # Dealing with score
         if cur_score == -1:
@@ -808,8 +880,6 @@ class OpGame:
         # Variables
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
-        shifted = []
-        combs = []
 
         # Looping through and moving each number accordingly
         for r in range(rows):
@@ -819,15 +889,11 @@ class OpGame:
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
                         self.grid[r, spot - 1] += current  # combine into one
-                        shifted.append((r, spot - 1))
-                        combs.append((r, spot - 1))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
                         moved |= (spot != c)  # updates moved if unmoved
                         prev = self.grid[r, spot] = current  # update prev
-                        if spot != c:
-                            shifted.append((r, spot))
                         spot += 1  # increment i
 
             # Fill the remaining right part with 0
@@ -835,20 +901,14 @@ class OpGame:
                 self.grid[r, spot] = 0
                 spot += 1
 
-        matches = self.check_neighbors(shifted)
-        # print(cur_score, matches/MATCH_FIT_CONST)
-        cur_score += matches
-
         # Return score or -1 if nothing moved
-        return (cur_score if moved else -1), combs
+        return cur_score if moved else -1
 
     # Push right command
     def push_right(self):
         # Variables
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
-        shifted = []
-        combs = []
 
         # Looping through and moving each number accordingly
         for r in range(rows):
@@ -858,15 +918,11 @@ class OpGame:
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
                         self.grid[r, spot + 1] += current  # combine into one
-                        shifted.append((r, spot + 1))
-                        combs.append((r, spot + 1))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
                         moved |= (spot != c)  # updates moved if unmoved
                         prev = self.grid[r, spot] = current  # update prev
-                        if spot != c:
-                            shifted.append((r, spot))
                         spot -= 1  # decrement i
 
             # Fill the remaining top part with
@@ -874,20 +930,14 @@ class OpGame:
                 self.grid[r, spot] = 0
                 spot -= 1
 
-        matches = self.check_neighbors(shifted)
-        # print(cur_score, matches/MATCH_FIT_CONST)
-        cur_score += matches
-
         # Return score or -1 if nothing moved
-        return (cur_score if moved else -1), combs
+        return cur_score if moved else -1
 
     # Push up command
     def push_up(self):
         # Variables
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
-        shifted = []
-        combs = []
 
         # Looping through and moving each number accordingly
         for c in range(columns):
@@ -897,15 +947,11 @@ class OpGame:
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
                         self.grid[spot - 1, c] += current  # combine into one
-                        shifted.append((spot - 1, c))
-                        combs.append((spot - 1, c))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
                         moved |= (spot != r)  # updates moved if unmoved
                         prev = self.grid[spot, c] = current  # update prev
-                        if spot != r:
-                            shifted.append((spot, c))
                         spot += 1  # increment i
 
             # Fill the remaining bottom part with 0
@@ -913,20 +959,14 @@ class OpGame:
                 self.grid[spot, c] = 0
                 spot += 1
 
-        matches = self.check_neighbors(shifted)
-        # print(cur_score, matches/MATCH_FIT_CONST)
-        cur_score += matches
-
         # Return score or -1 if nothing moved
-        return (cur_score if moved else -1), combs
+        return cur_score if moved else -1
 
     # Push down command
     def push_down(self):
         # Variables
         moved, cur_score = False, 0
         rows, columns = self.grid.shape[0], self.grid.shape[1]
-        shifted = []
-        combs = []
 
         # Looping through and moving each number accordingly
         for c in range(columns):
@@ -936,15 +976,11 @@ class OpGame:
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
                         self.grid[spot + 1, c] += current  # combine into one
-                        shifted.append((spot + 1, c))
-                        combs.append((spot + 1, c))
                         cur_score += math.log2(current)  # update score
                         prev, moved = 0, True  # set variables
                     else:  # if the numbers are different
                         moved |= (spot != r)  # updates moved if unmoved
                         prev = self.grid[spot, c] = current  # update prev
-                        if spot != r:
-                            shifted.append((spot, c))
                         spot -= 1  # decrement i
 
             # Fill the remaining top part with
@@ -952,12 +988,8 @@ class OpGame:
                 self.grid[spot, c] = 0
                 spot -= 1
 
-        matches = self.check_neighbors(shifted)
-        # print(cur_score, matches/MATCH_FIT_CONST)
-        cur_score += matches
-
         # Return score or -1 if nothing moved
-        return (cur_score if moved else -1), combs
+        return cur_score if moved else -1
 
     def check_neighbors(self, shifted):
         temp = 0
