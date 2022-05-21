@@ -43,14 +43,14 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-12043-250pop')
+    p = neat.Checkpointer.restore_checkpoint('checkpoints/neat-checkpoint-12043-250pop')
     # p = neat.Population(conf)
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(neat.StatisticsReporter())
     p.add_reporter(neat.Checkpointer(125))
 
     winner = p.run(eval_genomes, 1)
-    with open("best.pickle", "wb") as f:
+    with open("checkpoints/best.pickle", "wb") as f:
         pickle.dump(winner, f)
 
 

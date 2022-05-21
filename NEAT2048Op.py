@@ -38,9 +38,11 @@ class TwoGame:
 
                 m = self.game.maximum()
 
+                # todo change this to look only at corner closest to maximum
                 snake = max(self.game.corner_traverse(0), self.game.corner_traverse(1), self.game.corner_traverse(2),
                             self.game.corner_traverse(3))
 
+                # todo change right here
                 fitness += snake
 
                 if self.game.end:
@@ -65,7 +67,7 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    p = neat.Checkpointer.restore_checkpoint('snakeonly-250pop-459')
+    p = neat.Checkpointer.restore_checkpoint('checkpoints/snakeonly-250pop-459')
     # p = neat.Population(conf)
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(neat.StatisticsReporter())
