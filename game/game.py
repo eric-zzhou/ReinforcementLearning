@@ -12,6 +12,10 @@ MATCH_FIT_CONST = 0.3
 SNAKE_RATIO = 0.25
 
 
+def flog2(val):
+    return math.log2(val) if val != 0 else 0
+
+
 # Game object with 2048 game
 class Game:
     # Game constructor with default 4x4 board
@@ -800,17 +804,17 @@ class OpGame:
 
     def edges(self, corner):
         if corner == 0:
-            return math.log2(self.grid[0][0]) + math.log2(self.grid[0][1]) + math.log2(self.grid[0][2]) + math.log2(
-                self.grid[0][3]) + math.log2(self.grid[1][0]) + math.log2(self.grid[2][0]) + math.log2(self.grid[3][0])
+            return flog2(self.grid[0][0]) + flog2(self.grid[0][1]) + flog2(self.grid[0][2]) + flog2(self.grid[0][3]) \
+                   + flog2(self.grid[1][0]) + flog2(self.grid[2][0]) + flog2(self.grid[3][0])
         elif corner == 1:
-            return math.log2(self.grid[0][0]) + math.log2(self.grid[0][1]) + math.log2(self.grid[0][2]) + math.log2(
-                self.grid[0][3]) + math.log2(self.grid[1][3]) + math.log2(self.grid[2][3]) + math.log2(self.grid[3][3])
+            return flog2(self.grid[0][0]) + flog2(self.grid[0][1]) + flog2(self.grid[0][2]) + flog2(self.grid[0][3]) \
+                   + flog2(self.grid[1][3]) + flog2(self.grid[2][3]) + flog2(self.grid[3][3])
         elif corner == 2:
-            return math.log2(self.grid[0][0]) + math.log2(self.grid[1][0]) + math.log2(self.grid[2][0]) + math.log2(
-                self.grid[3][0]) + math.log2(self.grid[3][1]) + math.log2(self.grid[3][2]) + math.log2(self.grid[3][3])
+            return flog2(self.grid[0][0]) + flog2(self.grid[1][0]) + flog2(self.grid[2][0]) + flog2(self.grid[3][0]) \
+                   + flog2(self.grid[3][1]) + flog2(self.grid[3][2]) + flog2(self.grid[3][3])
         else:
-            return math.log2(self.grid[0][3]) + math.log2(self.grid[1][3]) + math.log2(self.grid[2][3]) + math.log2(
-                self.grid[3][0]) + math.log2(self.grid[3][1]) + math.log2(self.grid[3][2]) + math.log2(self.grid[3][3])
+            return flog2(self.grid[0][3]) + flog2(self.grid[1][3]) + flog2(self.grid[2][3]) + flog2(self.grid[3][0]) \
+                   + flog2(self.grid[3][1]) + flog2(self.grid[3][2]) + flog2(self.grid[3][3])
 
     # Play a certain move and calculate score
     def move(self, direction):
