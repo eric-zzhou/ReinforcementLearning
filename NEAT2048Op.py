@@ -2,7 +2,6 @@ from game import OpGame
 import neat
 import os
 import pickle
-from multiprocessing import Pool
 import multiprocessing
 import pandas
 from pandas import DataFrame
@@ -25,10 +24,9 @@ CORNER_MAPPING = {
 
 # move these to a pickle file (count, values, total, high_score)
 # pickle.dump((0, [], 0, 0), open(r'C:\Users\ezhou\PycharmProjects\ReinforcedLearning\NEAT_2048\values.pkl', 'wb'))
-# count = 0
-# values = []
-# total = 0
-# highest_score = 0
+values = []
+total = 0
+highest_score = 0
 
 VALUES = [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1]
 initial_weights = [1, 1, 1, 0.1, 0.5, 0.1]
@@ -90,13 +88,11 @@ class TwoGame:
                     score = self.game.score
                     self.game.display()
                     overall_fitness += fitness
-                    # global count, total, values, highest_score
-                    # if score > highest_score:
-                    #     highest_score = score
-                    # if count > 24499:
-                    #     total += score
-                    #     values.append(score)
-                    # count += 1
+                    global total, values, highest_score
+                    if score > highest_score:
+                        highest_score = score
+                    total += score
+                    values.append(score)
 
                     print(f"{fitness}, {score}, {m}")
                     run = False
@@ -107,8 +103,8 @@ def eval_genome(genome, conf):
     game = TwoGame()
     # print("___________________________________________________________________________________________________________")
     fitness = game.train_ai(genome, conf)
-    # global count, values, total, highest_score
-    # print(count, values, total, highest_score)
+    global values, total, highest_score
+    print(values, total, highest_score)
     return fitness
 
 
@@ -120,51 +116,54 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    for weight in WEIGHTS_COR[2:]:
+    for weight in WEIGHTS_COR[1:]:
         print(f"STARTING {weight}")
         # best_weight = 0
         # best_val = -1000000
         df = DataFrame()
         for val in VALUES:
             print(f"STARTING {val}")
-            weights[WEIGHTS_COR.index(weight)] = val
-            p = neat.Population(conf)
+            # weights[WEIGHTS_COR.index(weight)] = val
+            # p = neat.Population(conf)
+
+            print(f'{weight}-{val}-49')
+            p = neat.Checkpointer.restore_checkpoint(
+                f'C:\\Users\\ezhou\\PycharmProjects\\ReinforcedLearning\\NEAT_2048\\{weight}-{val}-49')
             p.add_reporter(neat.StdOutReporter(True))
             stats = neat.StatisticsReporter()
             p.add_reporter(stats)
             p.add_reporter(neat.Checkpointer(generation_interval=50, time_interval_seconds=None,
                                              filename_prefix=f"{weight}-{val}-"))
 
-            pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
-            winner = p.run(pe.evaluate, 50)
+            # pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
+            # winner = p.run(pe.evaluate, 50)
 
-            # winner = p.run(eval_genomes, 50)
-            # global count, values, total, highest_score
+            winner = p.run(eval_genomes, 1)
+            global values, total, highest_score
             # best = highest_score
-            # round_stats = {
-            #     "val": [val],
-            #     "mean": [total / 500],
-            #     "best": [highest_score]
-            # }
-            # for i in range(len(values)):
-            #     round_stats[f"{i}"] = values[i]
-            #
+            round_stats = {
+                "val": [val],
+                "mean": [total / 500],
+                "best": [highest_score]
+            }
+            for i in range(len(values)):
+                round_stats[f"{i}"] = values[i]
+
             # if best > best_val:
             #     best_val = best
             #     best_weight = val
-            #
-            # # Reset stuff
-            # count = 0
-            # values = []
-            # total = 0
-            # highest_score = 0
-            # # print(mean, stdev, best)
-            #
-            # # with open(f"{weight}_{val}_winner.pickle", "wb") as f:
-            # #     pickle.dump(winner, f)
-            #
-            # df2 = DataFrame(round_stats)
-            # df = pandas.concat([df, df2], ignore_index=True, axis=0)
+
+            # Reset stuff
+            values = []
+            total = 0
+            highest_score = 0
+            # print(mean, stdev, best)
+
+            # with open(f"{weight}_{val}_winner.pickle", "wb") as f:
+            #     pickle.dump(winner, f)
+
+            df2 = DataFrame(round_stats)
+            df = pandas.concat([df, df2], ignore_index=True, axis=0)
             try:
                 visualize.draw_net(config=config, genome=winner, filename=f'{weight}-{val}-best.svg')
             except Exception as ex:
@@ -180,8 +179,8 @@ def run_neat(conf):
             except Exception as ex:
                 print(ex)
                 pass
-        # df.set_index("val", inplace=True)
-        # df.to_excel(f'{weight}-checking.xlsx')
+        df.set_index("val", inplace=True)
+        df.to_excel(f'{weight}-checking.xlsx')
         ind = WEIGHTS_COR.index(weight)
         weights[ind] = initial_weights[ind]
         # print("Old weights:", weights)
