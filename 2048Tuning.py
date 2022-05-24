@@ -199,6 +199,6 @@ if __name__ == "__main__":
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_path)
     run_neat(config)
-    while True:
-        winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
-        time.sleep(0.1)
+    # while True:
+    #     winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+    #     time.sleep(0.1)

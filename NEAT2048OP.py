@@ -93,12 +93,12 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    p = neat.Checkpointer.restore_checkpoint('op-100pop-399')
+    p = neat.Checkpointer.restore_checkpoint('op-100pop-589')
     # p = neat.Population(conf)
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(generation_interval=10, time_interval_seconds=None,
+    p.add_reporter(neat.Checkpointer(generation_interval=5, time_interval_seconds=None,
                                      filename_prefix=f"op-100pop-"))
 
     # pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
