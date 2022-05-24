@@ -116,7 +116,7 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    for weight in WEIGHTS_COR[1:]:
+    for weight in WEIGHTS_COR[0:1]:
         print(f"STARTING {weight}")
         # best_weight = 0
         # best_val = -1000000
@@ -128,12 +128,12 @@ def run_neat(conf):
 
             print(f'{weight}-{val}-49')
             p = neat.Checkpointer.restore_checkpoint(
-                f'C:\\Users\\ezhou\\PycharmProjects\\ReinforcedLearning\\NEAT_2048\\{weight}-{val}-49')
+                f'C:\\Users\\ezhou\\PycharmProjects\\ReinforcedLearning\\NEAT_2048\\tuning\\{weight}-{val}-49')
             p.add_reporter(neat.StdOutReporter(True))
             stats = neat.StatisticsReporter()
             p.add_reporter(stats)
             p.add_reporter(neat.Checkpointer(generation_interval=50, time_interval_seconds=None,
-                                             filename_prefix=f"{weight}-{val}-"))
+                                             filename_prefix=f"tuning\\{weight}-{val}-"))
 
             # pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
             # winner = p.run(pe.evaluate, 50)
@@ -165,22 +165,22 @@ def run_neat(conf):
             df2 = DataFrame(round_stats)
             df = pandas.concat([df, df2], ignore_index=True, axis=0)
             try:
-                visualize.draw_net(config=config, genome=winner, filename=f'{weight}-{val}-best.svg')
+                visualize.draw_net(config=config, genome=winner, filename=f'tuning\\{weight}-{val}-best.svg')
             except Exception as ex:
                 print(ex)
                 pass
             try:
-                visualize.plot_stats(statistics=stats, filename=f'{weight}-{val}-fitnesses.svg')
+                visualize.plot_stats(statistics=stats, filename=f'tuning\\{weight}-{val}-fitnesses.svg')
             except Exception as ex:
                 print(ex)
                 pass
             try:
-                visualize.plot_species(statistics=stats, filename=f'{weight}-{val}-species.svg')
+                visualize.plot_species(statistics=stats, filename=f'tuning\\{weight}-{val}-species.svg')
             except Exception as ex:
                 print(ex)
                 pass
         df.set_index("val", inplace=True)
-        df.to_excel(f'{weight}-checking.xlsx')
+        df.to_excel(f'tuning\\{weight}-checking.xlsx')
         ind = WEIGHTS_COR.index(weight)
         weights[ind] = initial_weights[ind]
         # print("Old weights:", weights)
