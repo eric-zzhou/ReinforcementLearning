@@ -83,47 +83,6 @@ class TwoGame:
         return overall_fitness
 
 
-# if self.game.end:
-#     self.game.display()
-#     fitness = self.game.score
-#     maximum, count, order = self.game.ordered()
-#
-#     px = 0
-#     py = 0
-#     s = ""
-#     for i in range(count):
-#         m, px, py = order[0]
-#         if m != maximum:
-#             print(f"ERROR SOMETHING IS WRONG: {maximum} vs {m} ({px}, {py})")
-#             exit()
-#         if ((px == 0) or (px == 3)) and ((py == 0) or (px == 3)):
-#             fitness *= math.log2(maximum)
-#             s = f" * {math.log2(maximum)}"
-#             # print(f"\tmultiplied: {px}, {py}, {(px == 0) or (px == 3)}, {(py == 0) or (py == 3)}, "
-#             #       f"{((px == 0) or (px == 3)) and ((py == 0) or (py == 3))}")
-#             order.pop(i)
-#             break
-#     if s == "":
-#         order.pop(0)
-#
-#     smoothness = 0
-#     right_spot = []
-#     for num, x, y in order:
-#         if abs(x - px) + abs(y - py) <= 1:
-#             smoothness += math.log2(num)
-#             right_spot.append(num)
-#             px = x
-#             py = y
-#         else:
-#             break
-#     if smoothness != 0:
-#         fitness *= smoothness
-#
-#     genome.fitness += fitness
-#     print(f"{fitness}, {maximum}")
-#     print(f"\tfitness: {self.game.score}{s}, {right_spot}")
-#     run = False
-
 def eval_genome(genome, conf):
     game = TwoGame()
     # print("___________________________________________________________________________________________________________")

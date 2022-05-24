@@ -20,8 +20,8 @@ CORNER_MAPPING = {
     (3, 2): 3
 }
 
-# empty, edge, smooth, matches, mono, snake
-weights = [0.75, 1, 0.875, 0.075, 0.025, 0.875]
+#         empty, edge, smooth, matches,  mono, snake
+weights = [0.75, 1, 0.875, 0.075, 0.025, 1]
 
 
 class TwoGame:
@@ -93,13 +93,13 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    # p = neat.Checkpointer.restore_checkpoint('op-')
-    p = neat.Population(conf)
+    p = neat.Checkpointer.restore_checkpoint('op-100pop-399')
+    # p = neat.Population(conf)
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(generation_interval=50, time_interval_seconds=None,
-                                     filename_prefix=f"op-"))
+    p.add_reporter(neat.Checkpointer(generation_interval=10, time_interval_seconds=None,
+                                     filename_prefix=f"op-100pop-"))
 
     # pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
     # winner = p.run(pe.evaluate, 1000000000000000000)
