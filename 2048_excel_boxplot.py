@@ -7,9 +7,7 @@ WEIGHTS_COR = ["emptyw", "edgew", "smoothw", "matchw", "monow", "snakew"]
 VALUES = [0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1]
 
 # Loops through each of the weights
-# for weight in WEIGHTS_COR:
-if True:
-    weight = WEIGHTS_COR[1]
+for weight in WEIGHTS_COR[1:2]:
     df = pd.read_excel(f'tuning\\{weight}-checking.xlsx', index_col=0)  # data from excel
     boxplot_df = df.drop(['mean', 'best'], axis=1).T  # transposes table for plot
     boxplot_df.boxplot(column=VALUES).set(title=f'{weight}')  # box plot

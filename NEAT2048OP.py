@@ -21,7 +21,7 @@ CORNER_MAPPING = {
 }
 
 #         empty, edge, smooth, matches,  mono, snake
-weights = [0.75, 1, 0.875, 0.075, 0.025, 1]
+weights = [0.875, 1, 0.5, 0.5, 0.05, 1]
 
 
 class TwoGame:
