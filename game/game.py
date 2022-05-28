@@ -877,7 +877,7 @@ class OpGame:
         for i in range(self.grid.shape[0]):
             insides = "|".join("{:^6}".format(self.grid[i, j]) for j in range(self.grid.shape[1]))
             s += f"|{insides}|\n{wall}\n"
-        print(s, end="")
+        return s
 
     # Push left command
     def push_left(self):
@@ -1079,7 +1079,7 @@ def random_play(game, prt):
             print("              |")
             print("              v")
             print(buff[m] + "----------", a_moves[m], "----------", end="")
-            game.display()
+            print(game.display(), end="")
         print(game.score)
     return game.score
 

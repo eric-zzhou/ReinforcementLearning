@@ -1,3 +1,4 @@
+import logging
 import time
 
 from game import OpGame
@@ -9,8 +10,9 @@ import winsound
 import pandas
 from pandas import DataFrame
 import visualize
+import logging
 
-# todo redo edge
+logging.basicConfig(level=logging.WARNING)
 
 CORNER_MAPPING = {
     (0, 1): 0,
@@ -90,13 +92,13 @@ class TwoGame:
 
                 if self.game.end:
                     score = self.game.score
-                    self.game.display()
+                    logging.info(self.game.display())
                     overall_fitness += fitness
-                    global total, values, highest_score
-                    if score > highest_score:
-                        highest_score = score
-                    total += score
-                    values.append(score)
+                    # global total, values, highest_score
+                    # if score > highest_score:
+                    #     highest_score = score
+                    # total += score
+                    # values.append(score)
 
                     print(f"{fitness}, {score}, {m}")
                     run = False
@@ -118,76 +120,67 @@ def eval_genomes(genomes, conf):
 
 
 def run_neat(conf):
-    for weight in WEIGHTS_COR[1:2]:
-        print(f"STARTING {weight}")
-        # best_weight = 0
-        # best_val = -1000000
+    for weight in WEIGHTS_COR[2:3]:
+        logging.info(f"STARTING {weight}")
         df = DataFrame()
         for val in VALUES:
-            print(f"STARTING {val}")
-            # weights[WEIGHTS_COR.index(weight)] = val
-            # p = neat.Population(conf)
+            logging.info(f"STARTING {val}")
+            weights[WEIGHTS_COR.index(weight)] = val
+            p = neat.Population(conf)
 
-            p = neat.Checkpointer.restore_checkpoint(
-                f'C:\\Users\\ezhou\\PycharmProjects\\ReinforcedLearning\\NEAT_2048\\tuning\\{weight}-{val}-49')
+            # p = neat.Checkpointer.restore_checkpoint(
+            #     f'C:\\Users\\ezhou\\PycharmProjects\\ReinforcedLearning\\NEAT_2048\\tuning\\{weight}-{val}-49')
             p.add_reporter(neat.StdOutReporter(True))
             stats = neat.StatisticsReporter()
             p.add_reporter(stats)
             p.add_reporter(neat.Checkpointer(generation_interval=50, time_interval_seconds=None,
                                              filename_prefix=f"tuning\\{weight}-{val}-"))
 
-            # pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
-            # winner = p.run(pe.evaluate, 50)
+            pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
+            winner = p.run(pe.evaluate, 50)
 
-            winner = p.run(eval_genomes, 1)
-            global values, total, highest_score
-            # best = highest_score
-            round_stats = {
-                "val": [val],
-                "mean": [total / len(values)],
-                "best": [highest_score]
-            }
-            for i in range(len(values)):
-                round_stats[f"{i}"] = values[i]
-
-            # if best > best_val:
-            #     best_val = best
-            #     best_weight = val
-
-            # Reset stuff
-            values = []
-            total = 0
-            highest_score = 0
-            # print(mean, stdev, best)
-
-            # with open(f"{weight}_{val}_winner.pickle", "wb") as f:
-            #     pickle.dump(winner, f)
-
-            df2 = DataFrame(round_stats)
-            df = pandas.concat([df, df2], ignore_index=True, axis=0)
-            # try:
-            #     visualize.draw_net(config=config, genome=winner, filename=f'tuning\\{weight}-{val}-best.svg')
-            # except Exception as ex:
-            #     print(ex)
-            #     pass
-            # try:
-            #     visualize.plot_stats(statistics=stats, filename=f'tuning\\{weight}-{val}-fitnesses.svg')
-            # except Exception as ex:
-            #     print(ex)
-            #     pass
-            # try:
-            #     visualize.plot_species(statistics=stats, filename=f'tuning\\{weight}-{val}-species.svg')
-            # except Exception as ex:
-            #     print(ex)
-            #     pass
-        df.set_index("val", inplace=True)
-        df.to_excel(f'tuning\\{weight}-checking.xlsx')
+        #     winner = p.run(eval_genomes, 1)
+        #     global values, total, highest_score
+        #     # best = highest_score
+        #     round_stats = {
+        #         "val": [val],
+        #         "mean": [total / len(values)],
+        #         "best": [highest_score]
+        #     }
+        #     for i in range(len(values)):
+        #         round_stats[f"{i}"] = values[i]
+        #
+        #     # if best > best_val:
+        #     #     best_val = best
+        #     #     best_weight = val
+        #
+        #     # Reset stuff
+        #     values = []
+        #     total = 0
+        #     highest_score = 0
+        #     # print(mean, stdev, best)
+        #
+        #     df2 = DataFrame(round_stats)
+        #     df = pandas.concat([df, df2], ignore_index=True, axis=0)
+        #     # try:
+        #     #     visualize.draw_net(config=config, genome=winner, filename=f'tuning\\{weight}-{val}-best.svg')
+        #     # except Exception as ex:
+        #     #     print(ex)
+        #     #     pass
+        #     # try:
+        #     #     visualize.plot_stats(statistics=stats, filename=f'tuning\\{weight}-{val}-fitnesses.svg')
+        #     # except Exception as ex:
+        #     #     print(ex)
+        #     #     pass
+        #     # try:
+        #     #     visualize.plot_species(statistics=stats, filename=f'tuning\\{weight}-{val}-species.svg')
+        #     # except Exception as ex:
+        #     #     print(ex)
+        #     #     pass
+        # df.set_index("val", inplace=True)
+        # df.to_excel(f'tuning\\{weight}-checking.xlsx')
         ind = WEIGHTS_COR.index(weight)
         weights[ind] = initial_weights[ind]
-        # print("Old weights:", weights)
-        # weights[WEIGHTS_COR.index(weight)] = best_weight
-        # pickle.dump(weights, open(r'C:\Users\ezhou\PycharmProjects\ReinforcedLearning\NEAT_2048\weights.pkl', 'wb'))
-        # print("New weights:", weights)
 
 
 if __name__ == "__main__":

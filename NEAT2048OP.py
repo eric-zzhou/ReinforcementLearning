@@ -4,7 +4,11 @@ import os
 import pickle
 import multiprocessing
 import visualize
+import logging
+import winsound
+import time
 
+logging.basicConfig(level=logging.WARNING)
 CORNER_MAPPING = {
     (0, 1): 0,
     (1, 0): 0,
@@ -19,9 +23,22 @@ CORNER_MAPPING = {
     (2, 3): 3,
     (3, 2): 3
 }
-
+NUM_GAME = 5
 #         empty, edge, smooth, matches,  mono, snake
-weights = [0.875, 1, 0.5, 0.5, 0.05, 1]
+weights = [0.875, 0.625, 0.75, 0.625, 0.05, 2]
+
+
+def save_stats(stats):
+    try:
+        visualize.plot_stats(statistics=stats, filename='opfitnesses.svg')
+    except Exception as ex:
+        logging.warning(ex)
+        pass
+    try:
+        visualize.plot_species(statistics=stats, filename='opspecies.svg')
+    except Exception as ex:
+        logging.warning(ex)
+        pass
 
 
 class TwoGame:
@@ -32,7 +49,7 @@ class TwoGame:
         net = neat.nn.FeedForwardNetwork.create(genome, conf)
         overall_fitness = 0
 
-        for games in range(5):
+        for games in range(NUM_GAME):
             self.game.reset_game()
             run = True
             fitness = 0
@@ -71,58 +88,58 @@ class TwoGame:
                             * weights[1] + mono * weights[4])
                 if self.game.end:
                     score = self.game.score
-                    self.game.display()
+                    logging.info(self.game.display())
                     overall_fitness += fitness
-                    print(f"{fitness}, {score}, {m}")
+                    logging.info(f"{fitness}, {score}, {m}")
                     run = False
-        return overall_fitness
+        # return sum(overall_fitness)
+        return overall_fitness / NUM_GAME
 
 
 def eval_genome(genome, conf):
-    game = TwoGame()
-    # print("___________________________________________________________________________________________________________")
-    fitness = game.train_ai(genome, conf)
-    return fitness
+    try:
+        game = TwoGame()
+        fitness = game.train_ai(genome, conf)
+        if fitness > 300000:
+            with open(f"op-{fitness}.pickle", "wb") as f:
+                pickle.dump(genome, f)
+        return fitness
+    except:
+        return 0
 
 
 def eval_genomes(genomes, conf):
     for i, genome_stuff in enumerate(genomes):
         genome_id, genome = genome_stuff
-        print(f"\n\nindividual {i}: -----------------------------------------------------------------------------")
+        logging.debug(f"\n\nindividual {i}: --------------------------------------------------------------------------")
         genome.fitness = eval_genome(genome, conf)
 
 
 def run_neat(conf):
-    p = neat.Checkpointer.restore_checkpoint('op-100pop-589')
-    # p = neat.Population(conf)
-    p.add_reporter(neat.StdOutReporter(True))
-    stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(generation_interval=5, time_interval_seconds=None,
-                                     filename_prefix=f"op-100pop-"))
+    try:
+        p = neat.Checkpointer.restore_checkpoint('op-100pop-3394')
+        # p = neat.Population(conf)
+        p.add_reporter(neat.StdOutReporter(True))
+        stats = neat.StatisticsReporter()
+        p.add_reporter(stats)
+        p.add_reporter(neat.Checkpointer(generation_interval=5, time_interval_seconds=None,
+                                         filename_prefix=f"op-100pop-"))
+        pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
+        winner = p.run(pe.evaluate, 100000000000000000)
 
-    # pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
-    # winner = p.run(pe.evaluate, 1000000000000000000)
-
-    winner = p.run(eval_genomes, 100000000000000000)
+        # winner = p.run(eval_genomes, 100000000000000)
+    except:
+        save_stats(stats)
+        exit()
     with open("op_winner.pickle", "wb") as f:
         pickle.dump(winner, f)
 
     # try:
     #     visualize.draw_net(config=config, genome=winner, filename='best.svg')
     # except Exception as ex:
-    #     print(ex)
+    #     logging.warning(ex)
     #     pass
-    # try:
-    #     visualize.plot_stats(statistics=stats, filename='fitnesses.svg')
-    # except Exception as ex:
-    #     print(ex)
-    #     pass
-    # try:
-    #     visualize.plot_species(statistics=stats, filename='species.svg')
-    # except Exception as ex:
-    #     print(ex)
-    #     pass
+    save_stats(stats)
 
 
 if __name__ == "__main__":
@@ -133,3 +150,6 @@ if __name__ == "__main__":
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_path)
     run_neat(config)
+    while True:
+        winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+        time.sleep(0.025)
