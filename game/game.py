@@ -1,7 +1,7 @@
 """
 Python code for the 2048 game that is specifically designed to work for AI and ML
 models to be trained on
-Modified version of https://github.com/Mekire/console-2048/blob/master/console2048.py
+Modified version of https://github.com/tjwei/2048-NN/blob/master/c2048.py
 """
 from random import random, randint, shuffle
 import numpy as np
@@ -19,8 +19,8 @@ def flog2(val):
 # Game object with 2048 game
 class Game:
     # Game constructor with default 4x4 board
-    def __init__(self, cols=4, rows=4, start_two=True):
-        self.grid = np.zeros(shape=(rows, cols), dtype='uint16')
+    def __init__(self, start_two=True):
+        self.grid = np.zeros(shape=(4, 4), dtype='uint16')
         self.score = 0
         self.end = False
         # Initialize board with 2 random numbers
@@ -31,16 +31,16 @@ class Game:
     # Flattens board to input into nn
     def flatten(self):
         flat = []
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 flat.append(self.grid[i][j])
         return flat
 
     # Find maximum number on the board
     def max(self):
         m = 0
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 if self.grid[i, j] > m:
                     m = self.grid[i, j]
         return m
@@ -101,10 +101,10 @@ class Game:
     # Print out board
     def display(self):
         print("")
-        wall = "+------" * self.grid.shape[1] + "+"
+        wall = "+------" * 4 + "+"
         print(wall)
-        for i in range(self.grid.shape[0]):
-            insides = "|".join("{:^6}".format(self.grid[i, j]) for j in range(self.grid.shape[1]))
+        for i in range(4):
+            insides = "|".join("{:^6}".format(self.grid[i, j]) for j in range(4))
             print(f"|{insides}|")
             print(wall)
 
@@ -112,12 +112,11 @@ class Game:
     def push_left(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
 
         # Looping through and moving each number accordingly
-        for r in range(rows):
+        for r in range(4):
             spot, prev = 0, 0
-            for c in range(columns):
+            for c in range(4):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -129,7 +128,7 @@ class Game:
                         prev = self.grid[r, spot] = current  # update prev
                         spot += 1  # increment i
             # Fill the remaining right part with 0
-            while spot < columns:
+            while spot < 4:
                 self.grid[r, spot] = 0
                 spot += 1
         # Return score or -1 if nothing moved
@@ -139,12 +138,11 @@ class Game:
     def push_right(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
 
         # Looping through and moving each number accordingly
-        for r in range(rows):
-            spot, prev = columns - 1, 0
-            for c in range(columns - 1, -1, -1):
+        for r in range(4):
+            spot, prev = 3, 0
+            for c in range(3, -1, -1):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -166,12 +164,11 @@ class Game:
     def push_up(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
 
         # Looping through and moving each number accordingly
-        for c in range(columns):
+        for c in range(4):
             spot, prev = 0, 0
-            for r in range(rows):
+            for r in range(4):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -183,7 +180,7 @@ class Game:
                         prev = self.grid[spot, c] = current  # update prev
                         spot += 1  # increment i
             # Fill the remaining bottom part with 0
-            while spot < rows:
+            while spot < 4:
                 self.grid[spot, c] = 0
                 spot += 1
         # Return score or -1 if nothing moved
@@ -193,12 +190,11 @@ class Game:
     def push_down(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
 
         # Looping through and moving each number accordingly
-        for c in range(columns):
-            spot, prev = rows - 1, 0
-            for r in range(rows - 1, -1, -1):
+        for c in range(4):
+            spot, prev = 3, 0
+            for r in range(3, -1, -1):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -222,8 +218,8 @@ class Game:
         j_s = []
 
         # Find all empty slots
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 if not self.grid[i, j]:
                     i_s.append(i)
                     j_s.append(j)
@@ -240,10 +236,9 @@ class Game:
 
     # Checks if there are any possible moves remaining
     def any_possible_moves(self):
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
         # Looping through every spot
-        for r in range(1, rows):
-            for c in range(1, columns):
+        for r in range(1, 4):
+            for c in range(1, 4):
                 current = self.grid[r, c]
                 # Checks if there are any empty slots in self and 2 directions
                 if not current:  # self
@@ -264,8 +259,8 @@ class Game:
 # Improved game
 class ImprovedGame:
     # Game constructor with default 4x4 board
-    def __init__(self, cols=4, rows=4, start_two=True):
-        self.grid = np.zeros(shape=(rows, cols), dtype='uint16')
+    def __init__(self, start_two=True):
+        self.grid = np.zeros(shape=(4, 4), dtype='uint16')
         self.score = 0
         self.end = False
         # Initialize board with 2 random numbers
@@ -273,8 +268,8 @@ class ImprovedGame:
             self.put_new_cell()
             self.put_new_cell()
 
-    def reset_game(self, cols=4, rows=4, start_two=True):
-        self.grid = np.zeros(shape=(rows, cols), dtype='uint16')
+    def reset_game(self, start_two=True):
+        self.grid = np.zeros(shape=(4, 4), dtype='uint16')
         self.score = 0
         self.end = False
         # Initialize board with 2 random numbers
@@ -285,8 +280,8 @@ class ImprovedGame:
     # Flattens board to input into nn
     def flatten(self):
         flat = []
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 curr = self.grid[i][j]
                 if curr != 0:
                     flat.append(math.log2(curr))
@@ -300,8 +295,8 @@ class ImprovedGame:
     # Find maximum number on the board
     def ordered(self):
         m = []
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 cur = self.grid[i, j]
                 if cur != 0:
                     m.append((cur, i, j))
@@ -425,10 +420,10 @@ class ImprovedGame:
     # Print out board
     def display(self):
         s = "\n"
-        wall = "+------" * self.grid.shape[1] + "+"
+        wall = "+------" * 4 + "+"
         s += wall + "\n"
-        for i in range(self.grid.shape[0]):
-            insides = "|".join("{:^6}".format(self.grid[i, j]) for j in range(self.grid.shape[1]))
+        for i in range(4):
+            insides = "|".join("{:^6}".format(self.grid[i, j]) for j in range(4))
             s += f"|{insides}|\n{wall}\n"
         print(s, end="")
 
@@ -436,14 +431,13 @@ class ImprovedGame:
     def push_left(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
         shifted = []
         combs = []
 
         # Looping through and moving each number accordingly
-        for r in range(rows):
+        for r in range(4):
             spot, prev = 0, 0
-            for c in range(columns):
+            for c in range(4):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -460,7 +454,7 @@ class ImprovedGame:
                         spot += 1  # increment i
 
             # Fill the remaining right part with 0
-            while spot < columns:
+            while spot < 4:
                 self.grid[r, spot] = 0
                 spot += 1
 
@@ -475,14 +469,13 @@ class ImprovedGame:
     def push_right(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
         shifted = []
         combs = []
 
         # Looping through and moving each number accordingly
-        for r in range(rows):
-            spot, prev = columns - 1, 0
-            for c in range(columns - 1, -1, -1):
+        for r in range(4):
+            spot, prev = 3, 0
+            for c in range(3, -1, -1):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -514,14 +507,13 @@ class ImprovedGame:
     def push_up(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
         shifted = []
         combs = []
 
         # Looping through and moving each number accordingly
-        for c in range(columns):
+        for c in range(4):
             spot, prev = 0, 0
-            for r in range(rows):
+            for r in range(4):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -538,7 +530,7 @@ class ImprovedGame:
                         spot += 1  # increment i
 
             # Fill the remaining bottom part with 0
-            while spot < rows:
+            while spot < 4:
                 self.grid[spot, c] = 0
                 spot += 1
 
@@ -553,14 +545,13 @@ class ImprovedGame:
     def push_down(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
         shifted = []
         combs = []
 
         # Looping through and moving each number accordingly
-        for c in range(columns):
-            spot, prev = rows - 1, 0
-            for r in range(rows - 1, -1, -1):
+        for c in range(4):
+            spot, prev = 3, 0
+            for r in range(3, -1, -1):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -618,8 +609,8 @@ class ImprovedGame:
         j_s = []
 
         # Find all empty slots
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 if not self.grid[i, j]:
                     i_s.append(i)
                     j_s.append(j)
@@ -636,10 +627,9 @@ class ImprovedGame:
 
     # Checks if there are any possible moves remaining
     def any_possible_moves(self):
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
         # Looping through every spot
-        for r in range(1, rows):
-            for c in range(1, columns):
+        for r in range(1, 4):
+            for c in range(1, 4):
                 current = self.grid[r, c]
                 # Checks if there are any empty slots in self and 2 directions
                 if not current:  # self
@@ -659,8 +649,8 @@ class ImprovedGame:
 
 class OpGame:
     # Game constructor with default 4x4 board
-    def __init__(self, cols=4, rows=4, start_two=True):
-        self.grid = np.zeros(shape=(rows, cols), dtype='uint16')
+    def __init__(self, start_two=True):
+        self.grid = np.zeros(shape=(4, 4), dtype='uint16')
         self.score = 0
         self.end = False
         # Initialize board with 2 random numbers
@@ -668,8 +658,8 @@ class OpGame:
             self.put_new_cell()
             self.put_new_cell()
 
-    def reset_game(self, cols=4, rows=4, start_two=True):
-        self.grid = np.zeros(shape=(rows, cols), dtype='uint16')
+    def reset_game(self, start_two=True):
+        self.grid = np.zeros(shape=(4, 4), dtype='uint16')
         self.score = 0
         self.end = False
         # Initialize board with 2 random numbers
@@ -680,8 +670,8 @@ class OpGame:
     # Flattens board to input into nn
     def flatten(self):
         flat = []
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 curr = self.grid[i][j]
                 if curr != 0:
                     flat.append(math.log2(curr))
@@ -695,8 +685,8 @@ class OpGame:
     # Find maximum number on the board
     def ordered(self):
         m = []
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 cur = self.grid[i, j]
                 if cur != 0:
                     m.append((cur, i, j))
@@ -705,8 +695,8 @@ class OpGame:
 
     def maximum(self):
         m = 0
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 cur = self.grid[i, j]
                 m = max(m, cur)
         return m
@@ -872,10 +862,10 @@ class OpGame:
     # Print out board
     def display(self):
         s = "\n"
-        wall = "+------" * self.grid.shape[1] + "+"
+        wall = "+------" * 4 + "+"
         s += wall + "\n"
-        for i in range(self.grid.shape[0]):
-            insides = "|".join("{:^6}".format(self.grid[i, j]) for j in range(self.grid.shape[1]))
+        for i in range(4):
+            insides = "|".join("{:^6}".format(self.grid[i, j]) for j in range(4))
             s += f"|{insides}|\n{wall}\n"
         return s
 
@@ -883,12 +873,11 @@ class OpGame:
     def push_left(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
 
         # Looping through and moving each number accordingly
-        for r in range(rows):
+        for r in range(4):
             spot, prev = 0, 0
-            for c in range(columns):
+            for c in range(4):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -901,7 +890,7 @@ class OpGame:
                         spot += 1  # increment i
 
             # Fill the remaining right part with 0
-            while spot < columns:
+            while spot < 4:
                 self.grid[r, spot] = 0
                 spot += 1
 
@@ -912,12 +901,11 @@ class OpGame:
     def push_right(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
 
         # Looping through and moving each number accordingly
-        for r in range(rows):
-            spot, prev = columns - 1, 0
-            for c in range(columns - 1, -1, -1):
+        for r in range(4):
+            spot, prev = 3, 0
+            for c in range(3, -1, -1):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -941,12 +929,11 @@ class OpGame:
     def push_up(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
 
         # Looping through and moving each number accordingly
-        for c in range(columns):
+        for c in range(4):
             spot, prev = 0, 0
-            for r in range(rows):
+            for r in range(4):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -959,7 +946,7 @@ class OpGame:
                         spot += 1  # increment i
 
             # Fill the remaining bottom part with 0
-            while spot < rows:
+            while spot < 4:
                 self.grid[spot, c] = 0
                 spot += 1
 
@@ -970,12 +957,11 @@ class OpGame:
     def push_down(self):
         # Variables
         moved, cur_score = False, 0
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
 
         # Looping through and moving each number accordingly
-        for c in range(columns):
-            spot, prev = rows - 1, 0
-            for r in range(rows - 1, -1, -1):
+        for c in range(4):
+            spot, prev = 3, 0
+            for r in range(3, -1, -1):
                 current = self.grid[r, c]
                 if current:  # if there's something there
                     if current == prev:  # if the number is the same as the previous
@@ -1025,8 +1011,8 @@ class OpGame:
         j_s = []
 
         # Find all empty slots
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
+        for i in range(4):
+            for j in range(4):
                 if not self.grid[i, j]:
                     i_s.append(i)
                     j_s.append(j)
@@ -1043,10 +1029,9 @@ class OpGame:
 
     # Checks if there are any possible moves remaining
     def any_possible_moves(self):
-        rows, columns = self.grid.shape[0], self.grid.shape[1]
         # Looping through every spot
-        for r in range(1, rows):
-            for c in range(1, columns):
+        for r in range(1, 4):
+            for c in range(1, 4):
                 current = self.grid[r, c]
                 # Checks if there are any empty slots in self and 2 directions
                 if not current:  # self

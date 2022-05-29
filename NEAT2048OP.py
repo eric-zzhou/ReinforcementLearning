@@ -25,7 +25,7 @@ CORNER_MAPPING = {
 }
 NUM_GAME = 5
 #         empty, edge, smooth, matches,  mono, snake
-weights = [0.875, 0.625, 0.75, 0.625, 0.05, 2]
+weights = [1, 0.75, 1, 0.75, 0.1, 2]
 
 
 def save_stats(stats):
@@ -117,7 +117,7 @@ def eval_genomes(genomes, conf):
 
 def run_neat(conf):
     try:
-        p = neat.Checkpointer.restore_checkpoint('op-100pop-3394')
+        p = neat.Checkpointer.restore_checkpoint('op-100pop-3259')
         # p = neat.Population(conf)
         p.add_reporter(neat.StdOutReporter(True))
         stats = neat.StatisticsReporter()

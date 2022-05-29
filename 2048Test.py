@@ -1,5 +1,5 @@
 from selenium import webdriver
-from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
+from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException, JavascriptException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
@@ -16,6 +16,8 @@ import winsound
 import time
 
 logging.basicConfig(level=logging.WARNING)
+TIME_RUN = (4 * 60 - 3) * 60
+ONE_RUN = False
 
 # Creates web driver
 PATH = "C:\\Program Files (x86)\\chromedriver.exe"
@@ -53,10 +55,17 @@ tile_container = WebDriverWait(driver, 5).until(  # waits until page loads main
 )
 new_game = driver.find_element(By.XPATH, "/html/body/div[1]/div[2]/a")
 
-driver.execute_script("""
-   var l = document.getElementsByClassName('ezoic-ad medrectangle-2 medrectangle-2139 adtester-container adtester-container-139')[0];
-   l.parentNode.removeChild(l);
-""")
+while True:
+    try:
+        driver.execute_script("""
+       var l = document.getElementsByClassName('ezoic-ad medrectangle-2 medrectangle-2139 adtester-container adtester-container-139')[0];
+       l.parentNode.removeChild(l);
+        """)
+        break
+    except JavascriptException:
+        for i in range(5):
+            winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+            time.sleep(0.1)
 
 # cont = input("Should we continue? y or yes for yes, anything else for no")
 # if ("y" not in cont) and ("yes" not in cont):
@@ -100,11 +109,14 @@ while True:
         end = driver.find_element(By.CLASS_NAME, "game-message.game-over")
         logging.info(g.score)
         g.reset_game(start_two=False)
-        if (time.time() - start_time) > 14220:
-            while True:
-                winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
-                time.sleep(0.025)
+        if ONE_RUN or (time.time() - start_time > 14220):
+            break
         time.sleep(2.5)
         new_game.click()
+        driver.delete_all_cookies()
     except NoSuchElementException:
         pass
+
+while True:
+    winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+    time.sleep(0.025)
