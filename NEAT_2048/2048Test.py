@@ -39,9 +39,9 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
 # "checkpoints/snakeonly_winner2.pickle"
 # with open("op-superclose.pickle", "rb") as f:
 # todo uncomment
-# with open(r"checkpoints\best.pickle", "rb") as f:
-#     winner = pickle.load(f)
-# net = neat.nn.FeedForwardNetwork.create(winner, config)
+with open(r"op-superclose.pickle", "rb") as f:
+    winner = pickle.load(f)
+net = neat.nn.FeedForwardNetwork.create(winner, config)
 
 # Make game
 a_moves = ["LEFT", "UP", "RIGHT", "DOWN"]
@@ -92,26 +92,25 @@ while True:
         g.set_grid(grid)
         logging.info(g.display())
 
-        # todo fix this part
-        # output = net.activate(tuple(g.flatten()))
-        # output_tuples = []
-        # for i, o in enumerate(output):
-        #     output_tuples.append((o, i))
-        # output_tuples.sort(reverse=True)
-        # for o, i in output_tuples:
-        #     # print(f"\t({o}, {i})")
-        #     if g.game_move(i):
-        #         webpage.send_keys(a_move_keys[i])
-        #         logging.info(f"Chosen move: {a_moves[i]}")
-        #         break
-
-        moves = [0, 1, 2, 3]
-        random.shuffle(moves)
-        for m in moves:
-            if g.game_move(m):
-                webpage.send_keys(a_move_keys[m])
-                logging.info(f"Chosen move: {a_moves[m]}")
+        output = net.activate(tuple(g.flatten()))
+        output_tuples = []
+        for i, o in enumerate(output):
+            output_tuples.append((o, i))
+        output_tuples.sort(reverse=True)
+        for o, i in output_tuples:
+            # print(f"\t({o}, {i})")
+            if g.game_move(i):
+                webpage.send_keys(a_move_keys[i])
+                logging.info(f"Chosen move: {a_moves[i]}")
                 break
+
+        # moves = [0, 1, 2, 3]
+        # random.shuffle(moves)
+        # for m in moves:
+        #     if g.game_move(m):
+        #         webpage.send_keys(a_move_keys[m])
+        #         logging.info(f"Chosen move: {a_moves[m]}")
+        #         break
     except StaleElementReferenceException:
         driver.implicitly_wait(0.0005)
 

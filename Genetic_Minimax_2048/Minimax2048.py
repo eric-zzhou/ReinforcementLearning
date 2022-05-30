@@ -1,3 +1,8 @@
+"""
+Python code for the minimax algorithm
+Some code from: https://github.com/lazuxd/playing-2048-with-minimax
+"""
+
 from game import AdversarialGame
 from sys import maxsize as MAX_INT
 
