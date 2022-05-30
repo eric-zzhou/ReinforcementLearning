@@ -1,0 +1,7 @@
+
+17:39:52,757 TrainingFileLog WARNING warning test
+17:39:52,758 TrainingFileLog ERROR error test
+17:39:52,758 TrainingFileLog CRITICAL critical test
+17:40:15,353 TrainingFileLog WARNING warning test
+17:40:15,353 TrainingFileLog ERROR error test
+17:40:15,353 TrainingFileLog CRITICAL critical test
