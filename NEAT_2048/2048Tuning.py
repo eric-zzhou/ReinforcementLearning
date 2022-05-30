@@ -36,7 +36,7 @@ total = 0
 highest_score = 0
 
 VALUES = [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1]
-with open(r'C:\Users\ezhou\PycharmProjects\ReinforcedLearning\NEAT_2048\weights.pkl', 'rb') as f:
+with open(r'/NEAT_2048/NEAT_2048/weights.pkl', 'rb') as f:
     initial_weights = weights = pickle.load(f)
 WEIGHTS_COR = ["emptyw", "edgew", "smoothw", "matchw", "monow", "snakew"]
 
@@ -125,7 +125,7 @@ def run_neat(conf):
             # p = neat.Population(conf)
 
             p = neat.Checkpointer.restore_checkpoint(
-                f'C:\\Users\\ezhou\\PycharmProjects\\ReinforcedLearning\\NEAT_2048\\tuning\\{weight}-{val}-49')
+                f'/NEAT_2048/NEAT_2048/tuning\\{weight}-{val}-49')
             p.add_reporter(neat.StdOutReporter(True))
             stats = neat.StatisticsReporter()
             p.add_reporter(stats)
