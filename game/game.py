@@ -7,13 +7,12 @@ from random import random, randint, shuffle
 import numpy as np
 import math
 
-# todo tune match fitness constant
 MATCH_FIT_CONST = 0.3
 SNAKE_RATIO = 0.25
 
 
 def flog2(val):
-    return math.log2(val) if val != 0 else 0
+    return math.log2(val) if val else 0
 
 
 # Game object with 2048 game
@@ -283,7 +282,7 @@ class ImprovedGame:
         for i in range(4):
             for j in range(4):
                 curr = self.grid[i][j]
-                if curr != 0:
+                if curr:
                     flat.append(math.log2(curr))
                 else:
                     flat.append(0)
@@ -298,7 +297,7 @@ class ImprovedGame:
         for i in range(4):
             for j in range(4):
                 cur = self.grid[i, j]
-                if cur != 0:
+                if cur:
                     m.append((cur, i, j))
         m.sort(reverse=True)
         return m
@@ -330,8 +329,6 @@ class ImprovedGame:
                     cont = False
                     break
                 if cur == vals[counter][0]:
-                    # todo change condition here for snaking fitness, maybe do the factor thing
-                    #  where if the next one is not the exact next largest, it adds a fraction but keeps going
                     nums1 += math.log2(cur)
                     counter += 1
                 else:
@@ -673,7 +670,7 @@ class OpGame:
         for i in range(4):
             for j in range(4):
                 curr = self.grid[i][j]
-                if curr != 0:
+                if curr:
                     flat.append(math.log2(curr))
                 else:
                     flat.append(0)
@@ -688,7 +685,7 @@ class OpGame:
         for i in range(4):
             for j in range(4):
                 cur = self.grid[i, j]
-                if cur != 0:
+                if cur:
                     m.append((cur, i, j))
         m.sort(reverse=True)
         return m

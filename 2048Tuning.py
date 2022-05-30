@@ -41,9 +41,6 @@ with open(r'C:\Users\ezhou\PycharmProjects\ReinforcedLearning\NEAT_2048\weights.
 WEIGHTS_COR = ["emptyw", "edgew", "smoothw", "matchw", "monow", "snakew"]
 
 
-# todo https://github.com/xificurk/2048-ai, look in cpp file and search for heur_score
-#  https://stackoverflow.com/questions/22342854/what-is-the-optimal-algorithm-for-the-game-2048/22389702#22389702
-
 class TwoGame:
     def __init__(self):
         self.game = OpGame()

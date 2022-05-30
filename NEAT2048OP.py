@@ -100,9 +100,9 @@ def eval_genome(genome, conf):
     try:
         game = TwoGame()
         fitness = game.train_ai(genome, conf)
-        if fitness > 300000:
-            with open(f"op-{fitness}.pickle", "wb") as f:
-                pickle.dump(genome, f)
+        # if fitness > 300000:
+        #     with open(f"op-{fitness}.pickle", "wb") as f:
+        #         pickle.dump(genome, f)
         return fitness
     except:
         return 0
@@ -117,14 +117,14 @@ def eval_genomes(genomes, conf):
 
 def run_neat(conf):
     try:
-        p = neat.Checkpointer.restore_checkpoint('op-100pop-3259')
-        # p = neat.Population(conf)
+        # p = neat.Checkpointer.restore_checkpoint('op-100pop-3259')
+        p = neat.Population(conf)
         p.add_reporter(neat.StdOutReporter(True))
         stats = neat.StatisticsReporter()
         p.add_reporter(stats)
-        p.add_reporter(neat.Checkpointer(generation_interval=5, time_interval_seconds=None,
-                                         filename_prefix=f"op-100pop-"))
-        pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
+        p.add_reporter(neat.Checkpointer(generation_interval=100, time_interval_seconds=None,
+                                         filename_prefix=f"op-troll-"))
+        pe = neat.ParallelEvaluator(multiprocessing.cpu_count() - 1, eval_genome)
         winner = p.run(pe.evaluate, 100000000000000000)
 
         # winner = p.run(eval_genomes, 100000000000000)
